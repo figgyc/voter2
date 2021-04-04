@@ -1,0 +1,333 @@
+/* GLOBAL STYLES */
+
+html {
+    background: var(--background);
+    color: var(--color);
+    font-family: var(--font-family);
+    font-weight: 300;
+}
+
+strong {
+    font-weight: 600;
+}
+
+input, button, textarea, select {
+    background: var(--inputbg);
+    color: var(--inputcolor);
+    border: 1px solid var(--inputborder);
+    font-family: inherit;
+    font-weight: 400;
+}
+
+button:hover, select:hover {
+    background: var(--inputhover);
+}
+button:active, select:hover {
+    background: var(--inputclick);
+}
+
+.selectFlex {
+    display:flex;
+    flex-direction: row;
+    min-height: 1.5em;
+}
+.selectFlex select {
+    flex-grow: 2;
+    flex-basis: 0;
+}
+select {
+    appearance: none;
+}
+.selectFlex label {
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+ul {
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+    color: var(--linkcolor);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* .left and .right are used for "dual-split" design which is used pretty frequently. */
+.left {
+    align-self: flex-start;
+}
+.right {
+    align-self: flex-end;
+}
+.split {
+    flex-grow: 1;
+    width: 50%;
+    align-self: start;
+}
+.grow {
+    flex-grow: 1;
+}
+
+.left, .right {
+    padding: 4px;
+}
+
+.invisible {
+    display: none !important;
+}
+
+/* NAV */
+
+nav, .inputSplit {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+nav .left p {
+    display:inline;
+}
+#logo {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+nav .right {
+    height: 100%;
+}
+nav .right div {
+    display: inline;
+}
+nav button {
+    height: 100%;
+}
+
+/* SETTINGS */
+
+#settings {
+    display: flex;
+    flex-direction: row;
+    background-color: var(--panelbg);
+
+    align-items: flex-start;
+    align-content: flex-start;
+}
+
+
+/* CONTENT AREA */
+
+#content-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#content-area textarea {
+    width:100%;
+    resize: none;
+    flex-grow:1;
+}
+
+#content-area .step {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+#content-area .prog {
+    flex-grow: 0;
+}
+
+/* Step 1 */
+
+#content-area .step1 input, #content-area textarea {
+    font-family: var(--monospace);
+}
+
+#responses {
+    min-height: 20em;
+}
+
+/* Step 2 */
+progress {
+    width: 100%;
+    height: 1.5em;
+    appearance: none;
+    background-color: var(--progressbg);
+    color: var(--linkcolor);
+    border-color: var(--inputborder);
+    border-style: solid;
+    border-width: 1px;
+}
+
+progress::-webkit-progress-bar {
+    background-color: var(--progressbg);
+}
+
+progress::-webkit-progress-value, progress::-moz-progress-bar {
+    background-color: var(--linkcolor);
+}
+
+#content-area .step2 {
+    flex-direction: row;
+}
+
+#content-area .step2 .split {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+}
+
+#content-area .step2 .right .tier:not(:first-child) {
+    border-top-width: 0px;
+}
+
+.response {
+    display: flex;
+    flex-direction: row;
+}
+
+.response .draggy {
+    background-color: var(--inputbg);
+    background-image: var(--draggy);
+    background-size: contain;
+    width: 1em;
+    height: 1em;
+    margin: 4px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.tier {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--inputborder);
+    overflow: hidden;
+    flex-basis: 0;
+    min-height: 4em;
+}
+
+.tier .descriptionBox {
+    color: #111;
+    width: 2em;
+    flex-shrink: 0;
+    font-weight:bold;
+    text-align: center;
+}
+
+.tier .dragBox {
+    flex-grow: 1;
+    overflow-y: scroll;
+}
+
+/* Step 3 */
+.respButton {
+    flex-grow: 1;
+    max-height: 8em;
+}
+
+.step3 #note {
+    flex-grow: 0.5;
+}
+
+/* Step L */
+#savestateList {
+    padding: 8px;
+}
+
+/** MOBILE STYLING **/
+
+.mobileOnly {
+    display: none;
+}
+
+@media only screen and (max-width:768px) {
+    nav, #settings, .inputSplit, #content-area .step2 {
+        flex-direction: column;
+    }
+    .split {
+        width: 100%;
+    }
+    .mobileOnly {
+        display: block;
+    }
+    .respButton {
+        max-height: unset;
+    }
+}
+
+/** THEMES **/
+
+.theme-classic {
+    --color: #cccccc;
+    --background: #050500;
+    --panelbg: var(--background);
+    --inputbg: #101015;
+    --inputcolor: #eeeeee;
+    --inputborder: #ffffff;
+    --linkcolor: #ffff00;
+    --inputhover: var(--inputbg);
+    --inputclick: var(--inputbg);
+    --progressbg: #000000;
+    --warning: #ffff00;
+    --font-family: Consolas, monospace;
+    --monospace: Consolas, monospace;
+    --responseborderwidth: 1px;
+    --draggy: url("selector.svg");
+}
+
+.theme-light {
+    --color: #101010;
+    --background: #fafafa;
+    --panelbg: #cccccc;
+    --inputbg: #ffffff;
+    --inputcolor: #101015;
+    --inputborder: #aaaaaa;
+    --linkcolor: #388266;
+    --inputhover: var(--panelbg);
+    --inputclick: var(--inputborder);
+    --progressbg: var(--inputcolor);
+    --warning: #886600;
+    --font-family: Bahnschrift, "Fira Sans", Roboto, monospace;
+    --monospace: "Fira Code", monospace;
+    --responseborderwidth: 4px;
+    --draggy: url("selector-dark.svg");
+}
+
+.theme-dark {
+    --color: #cccccc;
+    --background: #152222;
+    --panelbg: #333333;
+    --inputbg: #101015;
+    --inputcolor: #eeeeee;
+    --inputborder: #050505;
+    --linkcolor: #6fffc8;
+    --warning: #eeee00;
+    --inputhover: var(--panelbg);
+    --inputclick: var(--inputborder);
+    --progressbg: var(--inputbg);
+    --font-family: Bahnschrift, "Fira Sans", Roboto, monospace;
+    --monospace: "Fira Code", monospace;
+    --responseborderwidth: 2px;
+    --draggy: url("selector.svg");
+}
+
+.theme-dark, .theme-light {
+    
+}
+
+/*
+html {
+    --font-family: Fira Sans !important;
+    --monospace: Tamzen !important;
+}
+
+/**/
