@@ -322,7 +322,7 @@ activateStep("step1")
 
 //// Step 2: Tier listing
 const tierSets = {
-    none: ['Default'],
+    none: [ 'Default' ],
     numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
     numbersPoint5: ['0', '0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10'],
     letters: ['F', 'E', 'D', 'C', 'B', 'A'],
@@ -458,7 +458,7 @@ function trySort(comparator) {
     // Construct sublists
     let tierCodes = Object.keys(state.tierset).reverse()
     if (tierCodes.length == 1) { // the ['Default'] set
-        tierCodes = [-1]
+        tierCodes = [0, -1]
     }
      
     let sublists = []
@@ -903,6 +903,8 @@ bindClick("#saveBtn", e => {
     saveState(document.querySelector("#saveName").value)
     activateStep(navStack.pop(), true)
 })
+
+document.querySelector("#currentRevision").textContent = "Current revision: 2"
 
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {
