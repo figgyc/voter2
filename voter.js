@@ -454,6 +454,9 @@ bindStep("step3", () => {
 })
 
 //// Sorting Engine
+
+let sortCache = {}
+let cachedComparisons = 0
 function trySort(comparator) {
     // Construct sublists
     let tierCodes = Object.keys(state.tierset).reverse()
@@ -471,9 +474,11 @@ function trySort(comparator) {
     // Sort sublists
     const sortFunction = sortFunctions[document.querySelector("#sortalgo").value]
     let sortedSublists = []
-    for (let sublist of sublists) {
+    for (let sublist in sublists) {
         try {
-            sortedSublists.push(sortFunction(sublist, comparator))
+            let sorted = /*Object.keys(sortCache).includes(sublist) ? sortCache[sublist] : */ sortFunction(sublists[sublist], comparator)
+            sortCache[sublist] = sorted
+            sortedSublists.push(sorted)
         } catch (e) {
             return {
                 success: false,
@@ -515,26 +520,28 @@ function compareProgress() {
         debugGuesses = 0
         debugHandComparisons = 0
         debugComparisons = 0
-        const n = 100
+        const n = 50
         // determine max guesses
-        let temp = state.comparisons.slice()
-        state.comparisons = []
-        let maxGuesses = simulateAverage(n, () => {
-            debugGuesses = 0
-            trySort(voterComparator("debug"))
-            return debugGuesses
-        })
+        if (state.maxGuesses == undefined) {
+            let temp = state.comparisons.slice()
+            state.comparisons = []
+            state.maxGuesses = simulateAverage(n, () => {
+                debugGuesses = 0
+                trySort(voterComparator("debug"))
+                return debugGuesses
+            })
+            state.comparisons = temp
+        }
         
         // determine current guesses
-        state.comparisons = temp
         let currentGuesses = simulateAverage(n, () => {
             debugGuesses = 0
             trySort(voterComparator("debug"))
             return debugGuesses
         })
         
-        document.querySelector("progress").value = Math.max(0, maxGuesses - currentGuesses) / maxGuesses
-    }, 50)
+        document.querySelector("progress").value = Math.max(0, state.maxGuesses - currentGuesses) / state.maxGuesses
+    }, 200)
 }
 
 const aGb = -1
@@ -716,6 +723,7 @@ bindStep("step5", () => {
     deleteState("auto")
     let longOutput = ""
     let voteOutput = ""
+    if (state.letter == undefined) state.letter = true
     if (state.letter == true) {
         document.querySelector("#outputSequence").classList.remove("invisible")
         voteOutput = "[" + state.keyword + " "
@@ -793,6 +801,7 @@ function autoSave() {
 
 function loadState(name) {
     state = JSON.parse(localStorage.getItem("state:" + name))
+    sortCache = {}
 }
 
 function deleteState(name) {
@@ -935,6 +944,7 @@ if (localStorage.getItem("savestates") != null) {
             newSave.responses = oldSave.responses
             newSave.responseKeys = Object.keys(newSave.responses)
             newSave.note = (oldSave.prompt == undefined) ? "" : oldSave.prompt
+            newSave.letter = true
             state = newSave
             saveState(newSave.name, true)
         }
