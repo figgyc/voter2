@@ -299,7 +299,7 @@ bindClick("#go", e => {
     }
     state.tier = {}
     for (let responseCode in state.responses) {
-        state.tier[responseCode] = (state.yourResponses.includes(responseCode)) ? state.tierset.length-1 : -1
+        state.tier[responseCode] = (state.yourResponses.includes(responseCode) && tierSetName != "none") ? state.tierset.length-1 : -1
     }
     if (tierSetName == "none") {
         activateStep("step3") // skip to A/B
