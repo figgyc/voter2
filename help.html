@@ -1,0 +1,60 @@
+<html lang="en" class="theme-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter - the TWOW voting helper</title>
+    <link rel="stylesheet" href="reset.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/svg" href="icon.svg" />
+</head>
+<body>
+  <nav>
+    <div class="left">
+      <p id="logo">Voter</p>
+      <p id="subtitle">a <a href="https://figgyc.uk">figgyc</a> creation</p>
+    </div>
+    <div class="right">
+      <div id="buttons-cluster">
+        <a href="index.html">
+          <div class="">
+            <button id="back">Back</button>
+          </div>
+        </a>
+      </div>
+    </div>
+  </nav>
+  <div id="content-area">
+    <div class="step">
+      <h1>Video tutorial</h1>
+      <p>
+        Coming soon!
+      </p>
+      <h1>Get started</h1>
+      <p>
+        Voter is a tool designed mainly to help you vote on TWOW "megascreens" quickly and easily.
+        It works by sorting a list on simple "which is better?" comparisons. That way, you don't have
+        to keep the whole list in your brain when sorting.
+        For a bonus speedup, you can also use Voter's "tier list" function to split the response list into sub-lists based on quality.
+        It's faster to sort many small lists than one big list, due to complicated maths reasons. (Although for some list sizes, the added time to actually make the tier lists can outweigh the benefits.)
+      </p>
+      <p>
+        In summary:
+        <ol>
+          <li>From the Google Sheet, copy the megascreen columns. Include the letter <strong>and</strong> the responses. (If you don't have a sheet you can also enter these manually into the box.)</li>
+          <li>Type the voting keyword into the keyword box.</li>
+          <li>Type or copy/paste any letters which represent your response into the "Your responses" box. If you have two or more responses, separate each letter with a comma.</li>
+          <li>If you want to do tier listing, select a set of tiers to use in the "Tier listing mode" setting.</li>
+          <li>Click Go!</li>
+          <li>Start tier listing and comparing responses. It can take a while, which is why Voter does auto saving and also allows you to make manual saves. (Access these with the "Load" button at the top of the page.)</li>
+          <li>At the end, you'll end up with a vote which looks like this: <pre>[SOMETHING AEBDC]</pre> DM this to the host of your TWOW!</li>
+        </ol>
+      </p>
+      <h1>Advanced usage</h1>
+      <p>
+        Coming soon!
+      </p>
+    </div>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>
+  <script src="voter.js" async defer></script>
+</body>
+</html>

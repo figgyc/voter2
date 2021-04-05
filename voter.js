@@ -2,6 +2,8 @@
 
 //// Settings and data storage
 
+// These are at the top so they work on the help page
+
 const defaultSettings = {
     theme: "dark",
     tierset: "none",
@@ -13,6 +15,35 @@ const defaultSettings = {
 }
 
 const defaultSettingsJSON = JSON.stringify(defaultSettings)
+
+const themes = [
+    "light",
+    "dark",
+    "classic"
+]
+
+let themePicker = document.querySelector("select#theme")
+const html = document.querySelector("html")
+
+function activateTheme(newTheme) {
+    try {
+        themePicker.value = newTheme
+    } catch {}
+    for (let theme of themes) {
+        const themeClass = "theme-" + theme
+        if (theme == newTheme) {
+            html.classList.add(themeClass)
+        } else {
+            html.classList.remove(themeClass)
+        }
+    }
+}
+try {
+themePicker.addEventListener("change", e => {
+    activateTheme(themePicker.value)
+})
+} catch {}
+activateTheme(loadSetting("theme"))
 
 function localStorageDefault(key, defaultValue) {
     let item = localStorage.getItem(key)
@@ -183,30 +214,7 @@ function bindStep(step, closure) {
     stepHandlers[step] = closure
 }
 
-const themes = [
-    "light",
-    "dark",
-    "classic"
-]
 
-let themePicker = document.querySelector("select#theme")
-const html = document.querySelector("html")
-
-function activateTheme(newTheme) {
-    themePicker.value = newTheme
-    for (let theme of themes) {
-        const themeClass = "theme-" + theme
-        if (theme == newTheme) {
-            html.classList.add(themeClass)
-        } else {
-            html.classList.remove(themeClass)
-        }
-    }
-}
-themePicker.addEventListener("change", e => {
-    activateTheme(themePicker.value)
-})
-activateTheme(loadSetting("theme"))
 
 function bindClick(selector, closure) {
     document.querySelector(selector).addEventListener("click", closure)
