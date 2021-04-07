@@ -1,5 +1,5 @@
 //// Voter.js by figgyc
-
+"use strict"
 //// Settings and data storage
 
 // These are at the top so they work on the help page
@@ -98,9 +98,9 @@ for (let setting of Object.keys(defaultSettings)) {
 
 //// UI Helper functions
 
-// Realize - a simple DOM "template engine". By figgyc - free to use for any purpose.
-/*
- * Usage: realize(template: Node | RealizeTemplate | string): Node (most commonly Element, or Text, sometimes another Node)
+/** Realize - a simple DOM "template engine". By figgyc - free to use for any purpose.
+ * @param {Node | RealizeTemplate | string} template a template
+ * @returns {Node} (mostly Element, or Text, sometimes another Node) the constructed node
  * interface RealizeTemplate
  * {
  *  tag: string
@@ -153,11 +153,12 @@ function intToHex(i) {
  * @return {String} color
  */
 function makeColor(value) {
+    if (value == -1) return [111, 255, 200]
     // value must be between [0, 510]
     value = Math.min(Math.max(0,value), 1) * 510
 
-    var redValue
-    var greenValue
+    var redValue = 0
+    var greenValue = 0
     if (value < 255) {
         redValue = 255
         greenValue = Math.sqrt(value) * 16
@@ -169,9 +170,16 @@ function makeColor(value) {
         redValue = Math.round(redValue)
     }
 
-    return "#" + intToHex(redValue) + intToHex(greenValue) + "00"
+    return [redValue, greenValue, 0]
 }
 
+function hexColor(rgb) {
+    return "#" + intToHex(rgb[0]) + intToHex(rgb[1]) + intToHex(rgb[2])
+}
+
+function rgba(rgb, alpha) {
+    return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
+}
 
 const steps = [
     "step1", // Response collection
@@ -322,7 +330,7 @@ activateStep("step1")
 
 //// Step 2: Tier listing
 const tierSets = {
-    none: [ 'Default' ],
+    none: {"-1": "Default"},
     numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
     numbersPoint5: ['0', '0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10'],
     letters: ['F', 'E', 'D', 'C', 'B', 'A'],
@@ -360,7 +368,7 @@ bindStep("step2", () => {
                     tag: "div",
                     classes: ["descriptionBox" ],
                     styles: {
-                        "backgroundColor": makeColor(tierCode/state.tierset.length)
+                        "backgroundColor": hexColor(makeColor(tierCode/(state.tierset.length-1)))
                     },
                     text: tierName
                 }),
@@ -431,11 +439,11 @@ bindStep("step3", () => {
         const b = emptySelector("#b")
         a.textContent = state.responses[result.compare[0]]
         b.textContent = state.responses[result.compare[1]]
-        a.style.borderColor = makeColor(guessScore(result.compare[0]))
-        b.style.borderColor = makeColor(guessScore(result.compare[1]))
+        a.style.borderColor = hexColor(makeColor(guessScore(result.compare[0])))
+        b.style.borderColor = hexColor(makeColor(guessScore(result.compare[1])))
         if (loadSetting("theme") != "light") {
-            a.style.color = makeColor(guessScore(result.compare[0]))
-            b.style.color = makeColor(guessScore(result.compare[1]))
+            a.style.color = hexColor(makeColor(guessScore(result.compare[0])))
+            b.style.color = hexColor(makeColor(guessScore(result.compare[1])))
         }
         if (loadSetting("wordcount") == true) {
             a.appendChild(realize(" "))
@@ -457,39 +465,50 @@ bindStep("step3", () => {
 
 let sortCache = {}
 let cachedComparisons = 0
-function trySort(comparator) {
+
+function tierCodes() {
+    let tierCode = Object.keys(state.tierset).reverse()
+    if (tierCode.length == 1) { // the ['Default'] set
+        tierCode = [-1]
+    }
+    return tierCode
+}
+
+function tierSublists() {
+
+    
+    let sublists = {}
+    for (let tier of tierCodes()) {
+        sublists[tier] = state.responseKeys.filter(key => state.tier[key] == tier)
+    }
+    return sublists
+}
+
+function trySort(comparator, noCache) {
     // Construct sublists
-    let tierCodes = Object.keys(state.tierset).reverse()
-    if (tierCodes.length == 1) { // the ['Default'] set
-        tierCodes = [0, -1]
-    }
-     
-    let sublists = []
-    for (let tier of tierCodes) {
-        sublists.push(
-            state.responseKeys.filter(key => state.tier[key] == tier)
-        )
-    }
+
+    let sublists = tierSublists()
+    
     // tierCodes.append(-1) New algo disallows unsorteds
     // Sort sublists
-    const sortFunction = sortFunctions[document.querySelector("#sortalgo").value]
-    let sortedSublists = []
-    for (let sublist in sublists) {
-        try {
-            let sorted = /*Object.keys(sortCache).includes(sublist) ? sortCache[sublist] : */ sortFunction(sublists[sublist], comparator)
-            sortCache[sublist] = sorted
-            sortedSublists.push(sorted)
-        } catch (e) {
-            return {
-                success: false,
-                compare: e
-            }
+    const sortFunction = sortFunctions[loadSetting("sortalgo")]
+    let sortedSublists = {}
+    try {
+        for (let sublist of tierCodes()) {
+            let sorted = Object.keys(sortCache).includes(sublist) ? sortCache[sublist] : sortFunction(sublists[sublist], comparator)
+            if (!noCache) sortCache[sublist] = sorted
+            sortedSublists[sublist] = sorted
+        }
+    } catch (e) {
+        return {
+            success: false,
+            compare: e
         }
     }
     // Merge sublists
     let result = []
-    for (let sublist of sortedSublists) {
-        result = result.concat(sublist)
+    for (let sublist of tierCodes()) {
+        result = result.concat(sortedSublists[sublist])
     }
     return {
         success: true,
@@ -497,14 +516,13 @@ function trySort(comparator) {
     }
 }
 
-function simulateAverage(n, func) {
-    let result = 0
+function simulate(n, func) {
+    let result = []
     let i = 0
     while (i < n) {
-        result += func()
+        result.push(func())
         i++
     }
-    result = result / n
     return result
 }
 
@@ -521,42 +539,107 @@ function compareProgress() {
         debugHandComparisons = 0
         debugComparisons = 0
         const n = 50
+        const overFactor = 1.3 // for some reason human comparison seems to perform slower than random, so compensate
+
+        let sublists = tierSublists()
+        const sortFunction = sortFunctions[loadSetting("sortalgo")]
+        const comparator = voterComparator("predict")
+
+        // tierCodes.append(-1) New algo disallows unsorteds
+
         // determine max guesses
-        if (state.maxGuesses == undefined) {
+        if (state.tierMaxGuesses == undefined) {
+            state.tierMaxGuesses = {}
             let temp = state.comparisons.slice()
             state.comparisons = []
-            state.maxGuesses = simulateAverage(n, () => {
-                debugGuesses = 0
-                trySort(voterComparator("debug"))
-                return debugGuesses
-            })
+            for (let sublist of tierCodes()) {
+                let simulation = simulate(n, () => {
+                    debugGuesses = 0
+                    let sorted = sortFunction(sublists[sublist], comparator)
+                    return debugGuesses
+                })
+                //state.tierMaxGuesses[sublist] = overFactor * simulation.reduce((a, x) => a+x) / simulation.length
+                state.tierMaxGuesses[sublist] = simulation.reduce((a, b) => Math.max(a, b))
+            }
+
             state.comparisons = temp
         }
         
+        let tierCurrentGuesses = {}
         // determine current guesses
-        let currentGuesses = simulateAverage(n, () => {
-            debugGuesses = 0
-            trySort(voterComparator("debug"))
-            return debugGuesses
-        })
+        let gotCurrentTier = false
+        for (let sublist of tierCodes()) {
+            if (!Object.keys(sortCache).includes(sublist)) {
+                if (!gotCurrentTier) {
+                    gotCurrentTier = true
+                    debugGuesses = 0
+                    debugHandComparisons = 0
+                    let sorted = sortFunction(sublists[sublist], comparator)
+                    tierCurrentGuesses[sublist] = state.tierMaxGuesses[sublist] - debugHandComparisons 
+                } else {
+                    tierCurrentGuesses[sublist] = state.tierMaxGuesses[sublist]
+                }
+
+            } else {
+                tierCurrentGuesses[sublist] = 0
+            }   
+        }
+
+        // Display code
+        let tieredProgress = emptySelector("#tieredProgress")
+
+        let maxGuesses = Object.values(state.tierMaxGuesses).reduce((a, x) => a+x)
+        gotCurrentTier = false
+        for (let tier of tierCodes()) {
+            if (maxGuesses != 0) {
+                let percentIsTier = 100 * state.tierMaxGuesses[tier] / maxGuesses
+                let percentIsDone = gotCurrentTier ? 0 : (percentIsTier * Math.max(0, state.tierMaxGuesses[tier] - tierCurrentGuesses[tier]) / state.tierMaxGuesses[tier])
+                let percentIsUndone = percentIsTier - percentIsDone
+
+                if (percentIsDone > 0) {
+                    tieredProgress.appendChild(realize({
+                        tag: "div",
+                        classes: [ "block" ],
+                        styles: {
+                            width: percentIsDone + "%",
+                            backgroundColor: rgba(makeColor((tier == -1) ? -1 : (tier / (state.tierset.length-1))), 1)
+                        }
+                    }))
+                }
+                if (percentIsUndone > 0) {
+                    gotCurrentTier = true
+                    tieredProgress.appendChild(realize({
+                    tag: "div",
+                    classes: [ "block" ],
+                    styles: {
+                        width: percentIsUndone + "%",
+                        backgroundColor: rgba(
+                            makeColor((tier == -1) ? -1 : (tier / (state.tierset.length-1))),
+                            0.2 //percentIsDone == 0 ? 0.2 : 0.6
+                        )
+                    }
+                }))
+                }
+            }
+        }
         
-        document.querySelector("progress").value = Math.max(0, state.maxGuesses - currentGuesses) / state.maxGuesses
+        // document.querySelector("progress").value = Math.max(0, state.maxGuesses - currentGuesses) / state.maxGuesses
     }, 200)
 }
 
 const aGb = -1
 const bGa = 1
 const aEb = 0
-// mode = "guess", "debug", undefined
+// mode = "guess", "predict", undefined
 function voterComparator(mode) {
     return function(a, b) {
-        if (mode == "debug") debugComparisons ++
+        debugComparisons ++
         
         if ( state.yourResponses.includes(a) && state.yourResponses.includes(b) ) {
             return (state.yourResponses.indexOf(a) < state.yourResponses.indexOf(b) ) ? aGb : bGa
-        } else if (state.yourResponses.includes(a)) {
+        } if (state.yourResponses.includes(a)) {
             return aGb
-        } else if (state.yourResponses.includes(b)) {
+        } if (state.yourResponses.includes(b)) {
             return bGa
         } if (state.tier[a] != -1 && state.tier[b] != -1) {
             if (state.tier[a] > state.tier[b]) {
@@ -570,11 +653,12 @@ function voterComparator(mode) {
         } if (state.comparisons.includes(b + ">" + a)) {
             debugHandComparisons++
             return bGa
-        } if (mode == "guess" || mode == "debug") {
-            if (mode == "debug") {
-                debugGuesses++
-            }
+        } if (mode == "guess" || mode == "predict") {
+            debugGuesses++
+        } if (mode == "guess") {
             return ( Math.random() < 0.5 ) ? aGb : bGa
+        } if (mode == "predict") {
+            return (guessScore(a) > guessScore(b)) ? aGb : bGa
         } else {
             findResponseA = a
             findResponseB = b
@@ -634,6 +718,7 @@ document.querySelector("#note").addEventListener("change", e => {
 
 bindClick("#undo", e => {
     state.comparisons.pop()
+    sortCache = {}
     redraw()
 })
 
@@ -680,6 +765,7 @@ document.addEventListener("keydown", e => {
                     e.preventDefault()
                     let topCode = document.querySelector(".step2 .left .dragBox").children[0].dataset.response
                     state.tier[topCode] = state.tierset.length - (digit)
+                    autoSave()
                     redraw()
                 }
             }
@@ -913,7 +999,7 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-document.querySelector("#currentRevision").textContent = "Current revision: 3"
+document.querySelector("#currentRevision").textContent = "Current revision: 4"
 
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {

@@ -1,183 +1,186 @@
 <html lang="en" class="theme-dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voter - the TWOW voting helper</title>
-    <link rel="stylesheet" href="reset.min.css" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" type="image/svg" href="icon.svg" />
-</head>
-<body>
-  <nav>
-    <div class="left">
-      <p id="logo">Voter</p>
-      <p id="subtitle">a <a href="https://figgyc.uk">figgyc</a> creation</p>
-    </div>
-    <div class="right">
-      <div id="buttons-cluster">
-        <div class="step1">
-          <a href="help.html"><button id="help">Help</button></a>
-          <button id="importUI">Import/export</button>
-          <button id="loadUI">Load</button>
-          <button id="go">Go</button>
-          <button id="expand-settings">⚙</button>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Voter - the TWOW voting helper</title>
+        <link rel="stylesheet" href="reset.min.css" />
+        <link rel="stylesheet" href="style.css" />
+        <link rel="icon" type="image/svg" href="icon.svg" />
+    </head>
+    <body>
+        <nav>
+            <div class="left">
+                <p id="logo">Voter</p>
+                <p id="subtitle">a <a href="https://figgyc.uk">figgyc</a> creation</p>
+            </div>
+            <div class="right">
+                <div id="buttons-cluster">
+                    <div class="step1">
+                        <a href="help.html"><button id="help">Help</button></a>
+                        <button id="importUI">Import/export</button>
+                        <button id="loadUI">Load</button>
+                        <button id="go">Go</button>
+                        <button id="expand-settings">⚙</button>
+                    </div>
+                    <div class="step2 invisible">
+                        <button id="sort">Start sorting</button>
+                    </div>
+                    <div class="step3 invisible">
+                        <button id="undo">Undo</button>
+                    </div>
+                    <div class="step4 invisible">
+                        <button id="finish">Finish</button>
+                    </div>
+                    <div class="stepI invisible">
+                        <button id="import">Import</button>
+                    </div>
+                    <div class="stepL invisible">
+                        <button id="deleteAll">Delete all</button>
+                    </div>
+                    <div class="step2 step3 step4 invisible">
+                        <button id="save">Save</button>
+                    </div>
+                    <div class="stepL stepI stepS invisible">
+                        <button id="back">Back</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div id="settings">
+            <div class="left split">
+                <div class="mobileOnly">
+                    <strong>Tip:</strong> Tap the ⚙ icon to hide the settings.
+                </div>
+                <h4>Settings</h4>
+                <div class="selectFlex">
+                    <label for="tierset">Tier listing mode</label>
+                    <select name="tierset" id="tierset" value="none">
+                        <option value="none">Off</option>
+                        <option value="numbers">Numbers (0, 1, to 10)</option>
+                        <option value="numbersPoint5">Numbers including .5s (0, 0.5 to 10)</option>
+                        <option value="letters">Letters A to F</option>
+                        <option value="lettersS">Letters S to F</option>
+                        <option value="lettersDeltas">Grades A+ to D-</option>
+                        <option value="lettersDeltasS">Grades S+ to D-</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="selectFlex" id="customTiersetFlex" class="invisible">
+                    <input type="text" id="customTierset" placeholder="Separate with commas, lowest to highest" class="grow" />
+                </div>
+                <div class="selectFlex">
+                    <label for="theme">Theme</label>
+                    <select name="theme" id="theme" value="dark">
+                        <option value="classic">Classic</option>
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                <div class="selectFlex">
+                    <label for="sortalgo">Sorting algorithm</label>
+                    <select name="sortalgo" id="sortalgo" value="merge">
+                        <option value="merge">Merge</option>
+                        <option value="legacy">Legacy</option>
+                    </select>
+                </div>
+                <div class="selectFlex">
+                    <input type="checkbox" id="letter" name="letter" checked />
+                    <label for="letter">TWOW mode (Responses are input with letters at the start)</label>
+                </div>
+                <div class="selectFlex">
+                    <input type="checkbox" id="wordcount" name="wordcount" checked />
+                    <label for="wordcount">Show word count (may not always be 100% right, always double check)</label>
+                </div>
+                <div class="selectFlex">
+                    <input type="checkbox" id="smartColors" name="smartColors" checked />
+                    <label for="smartColors">Smart colors (based on previous voting, better responses are more green)</label>
+                </div>
+            </div>
+            <div class="right split">
+                <h4>News</h4>
+                <ul>
+                    <li id="currentRevision">Current revision: Loading</li>
+                    <li style=" color: var(--warning)"><strong>Alert!</strong> Check any votes that used the "your responses" box, did not use tiers, and were made with revision 1. Your letters will not be at the start of your vote!</li>
+                    <li>
+                        <strong>New:</strong> The progress bar is now extra fancy! It's split up by tier. Alongside that is a significant performance improvement.
+                    </li>
+                </ul>
+                <h4>About</h4>
+                <p>
+                    Voter is an <a href="https://github.com/figgyc/voter2">open source project</a>. See <a href="LICENSE">credits</a>.
+                    For feedback, find me on Discord (figgyc#0168), <a href="https://twitter.com/f1ggyc">Twitter</a>
+                    or <a href="mailto:voter@figgyc.uk">email</a>.
+                </p>
+            </div>
         </div>
-        <div class="step2 invisible">
-          <button id="sort">Start sorting</button>
-        </div>
-        <div class="step3 invisible">
-          <button id="undo">Undo</button>
-        </div>
-        <div class="step4 invisible">
-          <button id="finish">Finish</button>
-        </div>
-        <div class="stepI invisible">
-          <button id="import">Import</button>
-        </div>
-        <div class="stepL invisible">
-          <button id="deleteAll">Delete all</button>
-        </div>
-        <div class="step2 step3 step4 invisible">
-          <button id="save">Save</button>
-        </div>
-        <div class="stepL stepI stepS invisible">
-          <button id="back">Back</button>
-        </div>
-      </div>
-    </div>
-  </nav>
-  <div id="settings">
-    <div class="left split">
-      <div class="mobileOnly">
-          <strong>Tip:</strong> Tap the ⚙ icon to hide the settings.
-      </div>
-      <h4>Settings</h4>
-      <div class="selectFlex">
-            <label for="tierset">Tier listing mode</label>
-            <select name="tierset" id="tierset" value="none">
-                <option value="none">Off</option>
-                <option value="numbers">Numbers (0, 1, to 10)</option>
-                <option value="numbersPoint5">Numbers including .5s (0, 0.5 to 10)</option>
-                <option value="letters">Letters A to F</option>
-                <option value="lettersS">Letters S to F</option>
-                <option value="lettersDeltas">Grades A+ to D-</option>
-                <option value="lettersDeltasS">Grades S+ to D-</option>
-                <option value="custom">Custom</option>
-            </select>
-      </div>
-      <div class="selectFlex" id="customTiersetFlex" class="invisible">
-          <input type="text" id="customTierset" placeholder="Separate with commas, lowest to highest" class="grow" />
-      </div>
-      <div class="selectFlex">
-        <label for="theme">Theme</label>
-        <select name="theme" id="theme" value="dark">
-          <option value="classic">Classic</option>
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-        </select>
-      </div>
-      <div class="selectFlex">
-        <label for="sortalgo">Sorting algorithm</label>
-        <select name="sortalgo" id="sortalgo" value="merge">
-          <option value="merge">Merge</option>
-          <option value="legacy">Legacy</option>
-        </select>
-      </div>
-      <div class="selectFlex">
-        <input type="checkbox" id="letter" name="letter" checked />
-        <label for="letter">TWOW mode (Responses are input with letters at the start)</label>
-      </div>
-      <div class="selectFlex">
-        <input type="checkbox" id="wordcount" name="wordcount" checked />
-        <label for="wordcount">Show word count (may not always be 100% right, always double check)</label>
-      </div>
-      <div class="selectFlex">
-        <input type="checkbox" id="smartColors" name="smartColors" checked />
-        <label for="smartColors">Smart colors (based on previous voting, better responses are more green)</label>
-      </div>
-    </div>
-    <div class="right split">
-      <h4>News</h4>
-      <ul>
-        <li id="currentRevision">Current revision: Loading</li>
-        <li style=" color: var(--warning)"><strong>Alert!</strong> Check any votes that used the "your responses" box, did not use tiers, and were made with revision 1. Your letters will not be at the start of your vote!</li>
-        <li>
-          <strong>New:</strong> Welcome to Voter version 2! See the <a href="help.html">new tutorial</a>.
-          It's got some cool tips for functions you never noticed were there. Also please report any bugs if you find them.
-        </li>
-      </ul>
-      <h4>About</h4>
-      <p>
-        Voter is an <a href="https://github.com/figgyc/voter2">open source project</a>. See <a href="LICENSE">credits</a>.
-        For feedback, find me on Discord (figgyc#0168), <a href="https://twitter.com/f1ggyc">Twitter</a>
-        or <a href="mailto:voter@figgyc.uk">email</a>.
-      </p>
-    </div>
-  </div>
-  <div id="content-area">
-    <div class="step step1">
-      <!-- Step 1: Response Input -->
-      <div class="inputSplit">
-        <input class="left split" type="text" id="yourResponses" placeholder="Your response codes (comma separate)" autocomplete="off" />
-        <input class="right split" type="text" id="keyword" placeholder="KEYWORD" autocomplete="off" />
-      </div>
-      <textarea id="responses" placeholder="Responses (one per line)" autocomplete="off"></textarea>
-    </div>
-    <div class="step step2 step3 prog invisible">
-      <!-- Step 2/3: Progress bar -->
-      <progress class="flex" id="progress" max="1" value="0"></progress>
-    </div>
-    <div class="step step2 invisible">
-      <!-- Step 2: Tier Listing / Subsorting (optional) -->
-      <div class="left split">
-      </div>
-      <div class="right split">
-      </div>
-    </div>
-    <div class="step step3 invisible">
-      <!-- Step 3: A/B comparison -->
-      <button class="flex respButton" id="a">Response A</button>
-      <button class="flex respButton" id="b">Response B</button>
-      <textarea id="note" placeholder="Notes (eg put a prompt here and it will save)"></textarea>
+        <div id="content-area">
+            <div class="step step1">
+                <!-- Step 1: Response Input -->
+                <div class="inputSplit">
+                    <input class="left split" type="text" id="yourResponses" placeholder="Your response codes (comma separate)" autocomplete="off" />
+                    <input class="right split" type="text" id="keyword" placeholder="KEYWORD" autocomplete="off" />
+                </div>
+                <textarea id="responses" placeholder="Responses (one per line)" autocomplete="off"></textarea>
+            </div>
+            <div class="step step2 prog invisible">
+                <!-- Step 2 Progress bar -->
+                <progress class="flex" id="progress" max="1" value="0"></progress>
+            </div>
+            <div class="step step3 prog invisible">
+                <!-- Step 3 tiered progress bar  -->
+                <div id="tieredProgress"></div>
+            </div>
+            <div class="step step2 invisible">
+                <!-- Step 2: Tier Listing / Subsorting (optional) -->
+                <div class="left split">
+                </div>
+                <div class="right split">
+                </div>
+            </div>
+            <div class="step step3 invisible">
+                <!-- Step 3: A/B comparison -->
+                <button class="flex respButton" id="a">Response A</button>
+                <button class="flex respButton" id="b">Response B</button>
+                <textarea id="note" placeholder="Notes (eg put a prompt here and it will save)"></textarea>
 
-    </div>
-    <div class="step step4 invisible">
-      <!-- Step 4: Review -->
-      <p>
-        <h2>Review responses</h2>
-        <p>You should always review your vote to check for mistakes. Sometimes one misclick can mess it up a lot!</p>
-      </p>
-      <div id="responseList"></div>
-    </div>
-    <div class="step step5 invisible">
-      <!-- Step 5: Output -->
-      <input class="flex" readonly type="text" id="outputSequence" autocomplete="off" />
-      <textarea id="output" readonly autocomplete="off"></textarea>
-    </div>
-    <div class="step stepL invisible">
-      <!-- Step L: Savestate management -->
-      <p><strong>Note:</strong> Loading a save will override your autosave. If you want to keep it, load it first and save it separately.</p>
-      <div id="savestateList">
-      </div>
-    </div>
-    <div class="step stepI invisible">
-      <!-- Step I: Import/export  -->
-      <h3>Export data</h3>
-      <p>Copy the entire contents of the text box below, and copy it into the import text box in your other Voter instance.</p>
-      <textarea id="exportData" readonly></textarea>
-      <h3>Import data</h3>
-      <p>Paste an export here, then click the Import button at the top to import it.</p>
-      <textarea id="importData" placeholder="Data to import"></textarea>
-    </div>
-    <div class="step stepS invisible">
-      <!-- Step S: Save screen  -->
-      <h3>Save</h3>
-      <p><strong>Tip:</strong> Voter has autosave! Check it out in the Load menu.</p>
-      <input type="text" id="saveName" placeholder="Save name" />
-      <button id="saveBtn">Save</button>
-    </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>
-  <script src="voter.js" async defer></script>
-</body>
+            </div>
+            <div class="step step4 invisible">
+                <!-- Step 4: Review -->
+                <p>
+                    <h2>Review responses</h2>
+                    <p>You should always review your vote to check for mistakes. Sometimes one misclick can mess it up a lot!</p>
+                </p>
+                <div id="responseList"></div>
+            </div>
+            <div class="step step5 invisible">
+                <!-- Step 5: Output -->
+                <input class="flex" readonly type="text" id="outputSequence" autocomplete="off" />
+                <textarea id="output" readonly autocomplete="off"></textarea>
+            </div>
+            <div class="step stepL invisible">
+                <!-- Step L: Savestate management -->
+                <p><strong>Note:</strong> Loading a save will override your autosave. If you want to keep it, load it first and save it separately.</p>
+                <div id="savestateList">
+                </div>
+            </div>
+            <div class="step stepI invisible">
+                <!-- Step I: Import/export  -->
+                <h3>Export data</h3>
+                <p>Copy the entire contents of the text box below, and copy it into the import text box in your other Voter instance.</p>
+                <textarea id="exportData" readonly></textarea>
+                <h3>Import data</h3>
+                <p>Paste an export here, then click the Import button at the top to import it.</p>
+                <textarea id="importData" placeholder="Data to import"></textarea>
+            </div>
+            <div class="step stepS invisible">
+                <!-- Step S: Save screen  -->
+                <h3>Save</h3>
+                <p><strong>Tip:</strong> Voter has autosave! Check it out in the Load menu.</p>
+                <input type="text" id="saveName" placeholder="Save name" />
+                <button id="saveBtn">Save</button>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>
+        <script src="voter.js" async defer></script>
+    </body>
 </html>
