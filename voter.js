@@ -913,7 +913,7 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-document.querySelector("#currentRevision").textContent = "Current revision: 2"
+document.querySelector("#currentRevision").textContent = "Current revision: 3"
 
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {

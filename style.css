@@ -90,22 +90,35 @@ nav, .inputSplit {
 }
 
 nav .left p {
-    display:inline;
+    display: inline;
+    margin-left: 4px;
 }
+
 #logo {
     font-weight: bold;
     font-size: 24px;
 }
 
-nav .right {
-    height: 100%;
-}
-nav .right div {
-    display: inline;
-}
 nav button {
     height: 100%;
 }
+
+#buttons-cluster, #buttons-cluster div {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+#buttons-cluster button {
+  margin-left: 4px;
+}
+
+nav .left, nav .right {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
 
 /* SETTINGS */
 
