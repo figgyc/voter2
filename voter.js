@@ -686,8 +686,8 @@ function mergeSort(list, comparator) {
     if (list.length <= 1) return list
     let mergedList = []
     while (splitA.length > 0 && splitB.length > 0) {
-        a = splitA[0]
-        b = splitB[0]
+        let a = splitA[0]
+        let b = splitB[0]
         if (comparator(a, b) == aGb) {
             mergedList.push(a)
             splitA = splitA.slice(1) // remove the first element from each list
