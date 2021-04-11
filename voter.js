@@ -267,7 +267,7 @@ function letterSplit(responses) {
             let code = response.substring(0, response.indexOf(sep))
             // Last letter of code: fixes some odd spreadsheets, but prevents multi coding
             code = code.charAt(code.length-1)
-            let words = response.substring(response.indexOf(sep)+1)
+            let words = response.substring(response.indexOf(sep)+1).trim()
             output[code] = words
         } else {
             // Non-TWOW mode
@@ -999,7 +999,8 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-document.querySelector("#currentRevision").textContent = "Current revision: 4"
+const revision = 5
+document.querySelector("#currentRevision").textContent = "Current revision: " + revision
 
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {
