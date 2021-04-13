@@ -1038,7 +1038,7 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-const revision = 5
+const revision = 6
 document.querySelector("#currentRevision").textContent = "Current revision: " + revision
 
 //// Voter 1 > Voter 2 migration
