@@ -241,6 +241,10 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
     overflow-y: scroll;
 }
 
+.highlight {
+    color: var(--warning);
+}
+
 /* Step 3 */
 .respButton {
     flex-grow: 1;
@@ -290,6 +294,17 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
     .respButton {
         max-height: unset;
     }
+    nav .right {
+        height: 4em;
+    }
+
+    .buttonSet button {
+        height: 64px;
+        font-size: 48px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
 }
 
 /** THEMES **/

@@ -17,7 +17,7 @@
                 <div id="buttons-cluster">
                     <div class="step1">
                         <a href="help.html"><button id="help">Help</button></a>
-                        <button id="importUI">Import/export</button>
+                        <button id="importUI">Import/&#8203;export</button>
                         <button id="loadUI">Load</button>
                         <button id="go">Go</button>
                         <button id="expand-settings">⚙</button>
@@ -94,6 +94,10 @@
                 <div class="selectFlex">
                     <input type="checkbox" id="smartColors" name="smartColors" checked />
                     <label for="smartColors">Smart colors (based on previous voting, better responses are more green)</label>
+                </div>
+                <div class="selectFlex">
+                    <input type="checkbox" id="handleDrag" name="handleDrag" />
+                    <label for="handleDrag">Only drag with handles (good on mobile)</label>
                 </div>
             </div>
             <div class="right split">
@@ -180,6 +184,8 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>
+        <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+        <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
         <script src="voter.js" async defer></script>
     </body>
 </html>

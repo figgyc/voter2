@@ -11,6 +11,7 @@ const defaultSettings = {
     letter: true,
     wordcount: true,
     smartColors: true,
+    handleDrag: false, 
     customTierset: ""
 }
 
@@ -388,6 +389,43 @@ bindStep("step2", () => {
         })
         thing.dataset.response = responseCode
         tierBoxes[state.tier[responseCode]].appendChild(thing)
+        // Touchscreen drag-free tiering
+        let buttonSet = realize({
+            tag: "div",
+            classes: [ "buttonSet" ]
+        })
+        let tip = tippy(thing, {
+            trigger: "click focus",
+            hideOnClick: true,
+            interactive: true,
+            content: buttonSet,
+            followCursor: "initial",
+            appendTo: document.body,
+            onShow: () => {
+                thing.classList.add("highlight")
+            },
+            onHide: () => {
+                thing.classList.remove("highlight")
+            }
+        })
+        for (let tierCode = state.tierset.length-1; tierCode>=0; tierCode--) {
+            let button = buttonSet.appendChild(realize({
+                tag: "button",
+                styles: {
+                    "backgroundColor": hexColor(makeColor(tierCode/(state.tierset.length-1))),
+                    "color": "black",
+                    "fontWeight": "bold"
+                },
+                text: state.tierset[tierCode]
+            }))
+            button.addEventListener("click", e => {
+                state.tier[responseCode] = tierCode
+                tip.hide()
+                autoSave()
+                redraw()
+            })
+        }
+
     }
 
     function tierProgress() {
@@ -399,6 +437,7 @@ bindStep("step2", () => {
         Sortable.create(tierBoxes[tier], {
             animation: 150,
             group: "tiers",
+            handle: loadSetting("handleDrag") == true ? ".draggy" : undefined,
             onEnd: e => {
                 state.tier[e.item.dataset.response] = e.to.dataset.tierCode
                 autoSave()
