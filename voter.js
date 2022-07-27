@@ -901,7 +901,7 @@ function saveState(name, noActivate) {
     state.lastModified = new Date()
     //state.currentStep = currentStep
     state.name = name
-    let stateId = btoa(name + state.lastModified.toString()).substring(0, 64)
+    let stateId = btoa(name + state.lastModified.toISOString()).substring(0, 64)
     localStorage.setItem("state:" + stateId, JSON.stringify(state))
     // add name to savestate set
     let states = JSON.parse(localStorageDefault("states", "[]"))
