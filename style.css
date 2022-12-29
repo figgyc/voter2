@@ -164,6 +164,7 @@ nav .left, nav .right {
 
 .step1 #prenote {
     height: 34px;
+    min-height: 34px;
     flex: 0;
 }
 
