@@ -51,7 +51,22 @@
       </p>
       <h1>Advanced usage</h1>
       <p>
-        Coming soon!
+        <ul>
+            <li><strong>Tier listing mode</strong>: This provides a shortcut where you place responses into groups, like the cliche tier list image. Once the grouping is complete you only have to vote <em>within</em> each group. (Technically speaking, if you have groups A on top and B below, you're basically saying "every response in group A is better than every response in group B", so the voting screen will skip comparisons between groups.) You can move a response into or between groups by dragging it, or by tapping it and then tapping the appropriate group button. Note that the order within each tier does not matter.</li>
+            <li><strong>Theme</strong>: Makes the colors different. The Classic theme resembles the original Voter.js, if you dislike graphic design or like pure black screens (I hear it's good for OLED displays).</li>
+            <li><strong>Sorting algorithm</strong>: I recommend the Merge sort algorithm because it should show responses you've voted on recently near each other if possible, which should make them easier to remember. The Legacy sort algorithm uses your browser's built in sorting algorithm like the original Voter.js. </li>
+            <li><strong>TWOW mode</strong>: Leave this on if you're voting on a TWOW. Basically this enables the functionality where the first part of each line (before the first space or tab) is a symbol. This voting symbol is then used to assemble a finished vote which can be copied out of Voter and given to a host of the TWOW to process. If you disable this, you could use Voter to sort arbitrary lists of text without it eating the first word, which could be useful, but you won't get a "bracket vote" at the end.</li>
+            <li><strong>Show word count</strong>: Shows a best guess estimate of a word count. The definition of a "word" is difficult and the word count I use is a bit naive, so if you're voting against something because Voter says it has too many words, please double check first. One thing you could do is if the spreadsheet you're importing from has a manual human-verified word count, then you could copy that column in too and disable this option. (At some point I might add an option for Voter to show those in small text like the current automatic word count, but that's not a thing yet.)</li>
+            <li><strong>Smart colors</strong>: This will colour the buttons in the voting screen such that responses which you've previously voted positively on will appear green, responses voted negatively will appear red, and responses voted equally for each (or not voted on yet) will appear yellow (or some colour in between).</li>
+            <li><strong>Only drag with handles</strong>: On the tier list screen and review screen, Voter features drag and drop lists to let you rearrange responses. On a computer it's nice to drag the text of the responses so you don't have to move your mouse to the small drag handles. But on a phone this will prevent you from scrolling the screen by touching and swiping, so this option makes it so you can only move drag and drop lists by using the handles.</li>
+            <li><strong>Import/export</strong>: This page is fairly self explanatory - it lets you import and export your in-progress voting between different devices.</li>
+            <li><strong>Votelink</strong>:
+                If you host a TWOW, you can create a link that automatically sends your voters to a particular screen. The format is as follows: <br />
+                <pre><code>https://voter.figgyc.uk/#votelink=keyword!votescreen</code></pre> <br />
+                where votescreen is the (URL encoded) content of the Responses box, and same for the keyword box. To generate the votescreen string, use one line for each response, where the voting letter/symbol and response are separated by a tab or space. If you use Google Sheets, see <a href="https://docs.google.com/spreadsheets/d/1dfbluK2b23qivuPQ3LTxHAeYBH2cqOiCgJJtSxbHb0g">this Sheet</a> for an example formula. You might find it useful to make a copy of the sheet in the File menu at the top.
+            </li>
+
+        </ul>
       </p>
     </div>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>

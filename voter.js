@@ -11,7 +11,7 @@ const defaultSettings = {
     letter: true,
     wordcount: true,
     smartColors: true,
-    handleDrag: false, 
+    handleDrag: false,
     customTierset: ""
 }
 
@@ -110,7 +110,7 @@ for (let setting of Object.keys(defaultSettings)) {
  *  classes: string[]
  *  children: <Node | RealizeTemplate | string>[]
  * }
- */ 
+ */
 function realize(template) {
     // We use Node here because Text is not an Element
     if (template instanceof Node) {
@@ -136,16 +136,16 @@ function realize(template) {
 
 // The below two functions are contrib.
 /**
- * Converts integer to a hexidecimal code, prepad's single 
- * digit hex codes with 0 to always return a two digit code. 
- * 
- * @param {Integer} i Integer to convert 
+ * Converts integer to a hexidecimal code, prepad's single
+ * digit hex codes with 0 to always return a two digit code.
+ *
+ * @param {Integer} i Integer to convert
  * @returns {String} The hexidecimal code
  */
 function intToHex(i) {
     var hex = parseInt(i).toString(16)
     return (hex.length < 2) ? "0" + hex : hex
-}   
+}
 
 /**
  * Return hex color from scalar *value*.
@@ -283,7 +283,7 @@ function shuffle(array) {
     let copy = array.slice()
     let result = []
     while (copy.length > 0) {
-        let item = copy.splice(Math.floor(Math.random() * copy.length), 1)[0] 
+        let item = copy.splice(Math.floor(Math.random() * copy.length), 1)[0]
         result.push(item)
     }
     return result
@@ -515,7 +515,7 @@ function tierCodes() {
 
 function tierSublists() {
 
-    
+
     let sublists = {}
     for (let tier of tierCodes()) {
         sublists[tier] = state.responseKeys.filter(key => state.tier[key] == tier)
@@ -527,7 +527,7 @@ function trySort(comparator, noCache) {
     // Construct sublists
 
     let sublists = tierSublists()
-    
+
     // tierCodes.append(-1) New algo disallows unsorteds
     // Sort sublists
     const sortFunction = sortFunctions[loadSetting("sortalgo")]
@@ -603,7 +603,7 @@ function compareProgress() {
 
             state.comparisons = temp
         }
-        
+
         let tierCurrentGuesses = {}
         // determine current guesses
         let gotCurrentTier = false
@@ -614,14 +614,14 @@ function compareProgress() {
                     debugGuesses = 0
                     debugHandComparisons = 0
                     let sorted = sortFunction(sublists[sublist], comparator)
-                    tierCurrentGuesses[sublist] = state.tierMaxGuesses[sublist] - debugHandComparisons 
+                    tierCurrentGuesses[sublist] = state.tierMaxGuesses[sublist] - debugHandComparisons
                 } else {
                     tierCurrentGuesses[sublist] = state.tierMaxGuesses[sublist]
                 }
 
             } else {
                 tierCurrentGuesses[sublist] = 0
-            }   
+            }
         }
 
         // Display code
@@ -661,7 +661,7 @@ function compareProgress() {
                 }
             }
         }
-        
+
         // document.querySelector("progress").value = Math.max(0, state.maxGuesses - currentGuesses) / state.maxGuesses
     }, 200)
 }
@@ -673,7 +673,7 @@ const aEb = 0
 function voterComparator(mode) {
     return function(a, b) {
         debugComparisons ++
-        
+
         if ( state.yourResponses.includes(a) && state.yourResponses.includes(b) ) {
             return (state.yourResponses.indexOf(a) < state.yourResponses.indexOf(b) ) ? aGb : bGa
         } if (state.yourResponses.includes(a)) {
@@ -836,7 +836,7 @@ bindStep("step4", () => {
             state.sortResult = Array.from(document.querySelector("#responseList").children).map(x => x.dataset.response)
             autoSave()
         }
-    })  
+    })
 })
 
 bindClick("#finish", e => {
@@ -857,7 +857,7 @@ bindStep("step5", () => {
     }
     for (let letter of state.sortResult) {
         voteOutput += letter
-        longOutput += letter + "\t" + state.responses[letter] + "\n" 
+        longOutput += letter + "\t" + state.responses[letter] + "\n"
     }
     document.querySelector("#output").value = longOutput
     if (state.letter == true) {
@@ -960,7 +960,7 @@ bindStep("stepL", () => {
     let states = JSON.parse(localStorageDefault("states", "[]"))
     for (let stateId of states) {
         let aState = JSON.parse(localStorage.getItem("state:" + stateId))
-        
+
         let loadButton = realize({
             tag: "button",
             text: "Load"
@@ -978,7 +978,7 @@ bindStep("stepL", () => {
             if (confirm("Delete?")) deleteState(stateId)
             redraw()
         })
-        
+
         let loadRow = realize({
             tag: "div",
             children: [
@@ -1056,8 +1056,26 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-const revision = 6
+const revision = 7
 document.querySelector("#currentRevision").textContent = "Current revision: " + revision
+
+// Votelink
+let votelink = null
+if (document.location.hash.startsWith("#votelink=")) {
+    votelink = decodeURI(document.location.hash.substring(10))
+}
+if (votelink === null) {
+    const params = new URLSearchParams(document.location.search)
+    votelink = params.get("votelink")
+}
+if (votelink !== null) {
+    var i = votelink.indexOf('!');
+    if (i != null) {
+        var parts = [votelink.slice(0,i), votelink.slice(i+1)]
+        document.querySelector("#keyword").value = parts[0]
+        document.querySelector("#responses").value = parts[1]
+    }
+}
 
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {
@@ -1092,7 +1110,7 @@ if (localStorage.getItem("savestates") != null) {
             state = newSave
             saveState(newSave.name, true)
         }
-        
+
         // Delete old format data
         localStorage.removeItem("savestates")
         localStorage.removeItem("theme")
