@@ -1106,6 +1106,25 @@ if (votelink2 !== null) {
     }
 }
 
+// Votelink 3 (allows ! in the note)
+let votelink3 = null
+if (document.location.hash.startsWith("#votelink3=")) {
+    votelink3 = decodeURIComponent(document.location.hash.substring(11))
+}
+if (votelink3 === null) {
+    const params = new URLSearchParams(document.location.search)
+    votelink3 = params.get("votelink3")
+}
+if (votelink3 !== null) {
+    var i = votelink3.indexOf('\t');
+    if (i != -1) {
+        let [vlkw, vlpn, vlresp] = splitWithTail(votelink3, "\t", 2);
+        document.querySelector("#keyword").value = vlkw
+        document.querySelector("#prenote").value = vlpn
+        document.querySelector("#responses").value = vlresp
+    }
+}
+
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {
     alert("Welcome to Voter version 2! We will now try to migrate your data. It might look a bit different but it works basically the same. You might want to try the new theme, or check out the new help page.")
