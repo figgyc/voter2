@@ -1062,7 +1062,7 @@ document.querySelector("#currentRevision").textContent = "Current revision: " + 
 // Votelink
 let votelink = null
 if (document.location.hash.startsWith("#votelink=")) {
-    votelink = decodeURI(document.location.hash.substring(10))
+    votelink = decodeURIComponent(document.location.hash.substring(10))
 }
 if (votelink === null) {
     const params = new URLSearchParams(document.location.search)
