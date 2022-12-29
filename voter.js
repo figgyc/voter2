@@ -293,7 +293,7 @@ bindClick("#go", e => {
     state = {}
     state.keyword = document.querySelector("#keyword").value
     if (state.keyword == null || state.keyword == "") state.keyword = "KEYWORD"
-    state.note = ""
+    state.note = document.querySelector("#prenote").value
     state.comparisons = []
     state.yourResponses = document.querySelector("#yourResponses").value.split(",").map(x => x.trim())
     state.responses = letterSplit(document.querySelector("#responses").value.trim().split("\n"))
@@ -1059,6 +1059,16 @@ bindClick("#saveBtn", e => {
 const revision = 7
 document.querySelector("#currentRevision").textContent = "Current revision: " + revision
 
+// https://stackoverflow.com/a/5582719
+function splitWithTail(str,delim,count){
+  var parts = str.split(delim)
+  var tail = parts.slice(count).join(delim)
+  var result = parts.slice(0,count)
+  result.push(tail)
+  return result
+}
+
+
 // Votelink
 let votelink = null
 if (document.location.hash.startsWith("#votelink=")) {
@@ -1070,10 +1080,29 @@ if (votelink === null) {
 }
 if (votelink !== null) {
     var i = votelink.indexOf('!');
-    if (i != null) {
+    if (i != -1) {
         var parts = [votelink.slice(0,i), votelink.slice(i+1)]
         document.querySelector("#keyword").value = parts[0]
         document.querySelector("#responses").value = parts[1]
+    }
+}
+
+// Votelink 2 (with note)
+let votelink2 = null
+if (document.location.hash.startsWith("#votelink2=")) {
+    votelink2 = decodeURIComponent(document.location.hash.substring(11))
+}
+if (votelink2 === null) {
+    const params = new URLSearchParams(document.location.search)
+    votelink2 = params.get("votelink2")
+}
+if (votelink2 !== null) {
+    var i = votelink2.indexOf('!');
+    if (i != -1) {
+        let [vlkw, vlpn, vlresp] = splitWithTail(votelink2, "!", 2);
+        document.querySelector("#keyword").value = vlkw
+        document.querySelector("#prenote").value = vlpn
+        document.querySelector("#responses").value = vlresp
     }
 }
 

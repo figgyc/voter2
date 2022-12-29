@@ -162,6 +162,11 @@ nav .left, nav .right {
     font-family: var(--monospace);
 }
 
+.step1 #prenote {
+    height: 34px;
+    flex: 0;
+}
+
 #responses {
     min-height: 20em;
 }
@@ -304,7 +309,7 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
         padding-left: 8px;
         padding-right: 8px;
     }
-    
+
 }
 
 /** THEMES **/
@@ -364,7 +369,7 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
 }
 
 .theme-dark, .theme-light {
-    
+
 }
 
 /*
