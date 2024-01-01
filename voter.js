@@ -534,7 +534,7 @@ function trySort(comparator, noCache) {
     let sortedSublists = {}
     try {
         for (let sublist of tierCodes()) {
-            let sorted = Object.keys(sortCache).includes(sublist) ? sortCache[sublist] : sortFunction(sublists[sublist], comparator)
+            let sorted = (Object.keys(sortCache).includes(sublist) && sortCache[sublist] !== undefined) ? sortCache[sublist] : sortFunction(sublists[sublist], comparator)
             if (!noCache) sortCache[sublist] = sorted
             sortedSublists[sublist] = sorted
         }
@@ -741,7 +741,7 @@ function mergeSort(list, comparator) {
 }
 
 function legacySort(list, comparator) {
-    list.sort(comparator)
+    return list.sort(comparator)
 }
 
 const sortFunctions = {
