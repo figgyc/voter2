@@ -290,6 +290,7 @@ function shuffle(array) {
 }
 
 bindClick("#go", e => {
+    localStorage.setItem("active", true)
     state = {}
     state.keyword = document.querySelector("#keyword").value
     if (state.keyword == null || state.keyword == "") state.keyword = "KEYWORD"
@@ -319,7 +320,7 @@ bindClick("#go", e => {
 
 bindStep("step1", () => {
     let goBtn = document.querySelector("#go")
-    if (localStorage.getItem("state:auto") != null) {
+    if (localStorage.getItem("state:auto") != null && localStorage.getItem("active") != null) {
         goBtn.style.color = "var(--warning)"
         goBtn.textContent = "Go (overwrite autosave)"
     } else {
@@ -845,7 +846,7 @@ bindClick("#finish", e => {
 
 //// Step 5: Output
 bindStep("step5", () => {
-    deleteState("auto")
+    localStorage.removeItem("active")
     let longOutput = ""
     let voteOutput = ""
     if (state.letter == undefined) state.letter = true
@@ -953,6 +954,9 @@ function deleteState(name) {
     let states = JSON.parse(localStorageDefault("states", "[]"))
     states = states.filter(x => x != name)
     localStorage.setItem("states", JSON.stringify(states))
+    if (name == "auto") {
+        localStorage.removeItem("active")
+    }
 }
 
 bindStep("stepL", () => {
