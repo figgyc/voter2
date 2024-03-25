@@ -479,11 +479,13 @@ bindStep("step3", () => {
         const b = emptySelector("#b")
         a.textContent = state.responses[result.compare[0]]
         b.textContent = state.responses[result.compare[1]]
-        a.style.borderColor = hexColor(makeColor(guessScore(result.compare[0])))
-        b.style.borderColor = hexColor(makeColor(guessScore(result.compare[1])))
-        if (loadSetting("theme") != "light") {
-            a.style.color = hexColor(makeColor(guessScore(result.compare[0])))
-            b.style.color = hexColor(makeColor(guessScore(result.compare[1])))
+        if (loadSetting("smartColors") == true) {
+            a.style.borderColor = hexColor(makeColor(guessScore(result.compare[0])))
+            b.style.borderColor = hexColor(makeColor(guessScore(result.compare[1])))
+            if (loadSetting("theme") != "light") {
+                a.style.color = hexColor(makeColor(guessScore(result.compare[0])))
+                b.style.color = hexColor(makeColor(guessScore(result.compare[1])))
+            }
         }
         if (loadSetting("wordcount") == true) {
             a.appendChild(realize(" "))
@@ -833,6 +835,7 @@ bindStep("step4", () => {
     Sortable.create(responseList, {
         animation: 150,
         group: "review",
+        handle: loadSetting("handleDrag") == true ? ".draggy" : undefined,
         onEnd: e => {
             state.sortResult = Array.from(document.querySelector("#responseList").children).map(x => x.dataset.response)
             autoSave()
