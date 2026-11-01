@@ -318,6 +318,38 @@ bindClick("#go", e => {
     }
 })
 
+// Enable quick pasting screen keyword from responses textarea into the keyword input
+document.querySelector("#responses").addEventListener("paste", e => {
+    if (e.target.value.trim() != "") {
+        const entireThingSelected = e.target.selectionStart === 0 && e.target.selectionEnd === e.target.value.length
+        if (!entireThingSelected) return;
+    }
+
+    requestAnimationFrame(() => {
+        let lines = e.target.value.split("\n")
+
+        const nonWhitespaceLines = lines.filter(s => s.trim() != "")
+        const firstLineLooksLikeKeyword = /^\s*\S+\s*$/.test(nonWhitespaceLines[0])
+        const secondLineLooksLikeResponse = /^\s*\S+\s*\S.*$/.test(nonWhitespaceLines[1])
+        if (firstLineLooksLikeKeyword && secondLineLooksLikeResponse) {
+            const keyword = nonWhitespaceLines[0].trim()
+            const currentKeyword = document.querySelector("#keyword").value.trim()
+            if (currentKeyword != keyword) {
+                document.querySelector("#keyword").value = keyword
+                lines = lines.slice(lines.indexOf(nonWhitespaceLines[1]))
+            }
+        }
+
+        const newValue = lines.map(line => line.replace(/\t+/g, "\t").trim())
+            .join("\n")
+            .replace(/\n+/g, "\n")
+            .replace(/^\s+/g, "")
+        e.target.focus()
+        e.target.setSelectionRange(0, e.target.value.length)
+        document.execCommand("insertText", false, newValue)
+    })
+})
+
 bindStep("step1", () => {
     let goBtn = document.querySelector("#go")
     if (localStorage.getItem("state:auto") != null && localStorage.getItem("active") != null) {
