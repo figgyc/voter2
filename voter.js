@@ -12,6 +12,7 @@ const defaultSettings = {
     wordcount: true,
     smartColors: true,
     handleDrag: false,
+    renderMedia: true,
     customTierset: ""
 }
 
@@ -69,6 +70,9 @@ function loadSetting(name) {
     return settings[name]
 }
 
+const imageZoomDialog = document.querySelector("dialog#imageZoomDialog")
+imageZoomDialog.addEventListener("click", () => imageZoomDialog.close())
+
 const tiersetSelect = document.querySelector("#tierset")
 function showCustom() {
     const customTierset = document.querySelector("#customTiersetFlex")
@@ -84,6 +88,10 @@ document.querySelector("#tierset").addEventListener("change", showCustom)
 for (let setting of Object.keys(defaultSettings)) {
     let settingInput = document.querySelector("#"+setting)
     let value = loadSetting(setting)
+    if (value === undefined) {
+        value = defaultSettings[setting]
+        saveSetting(setting, value)
+    }
     if (settingInput.type == "checkbox") {
         settingInput.checked = value
     } else {
@@ -180,6 +188,52 @@ function hexColor(rgb) {
 
 function rgba(rgb, alpha) {
     return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
+}
+
+/**
+ * Detect all media URLs in a response and a formatted version replacing the URLs with [tags]
+ * media URLs.
+ *
+ * @param {String} text Response text
+ * @return {Object} Object with arrays 'images', 'videos', 'audio' and string 'formattedText'
+ */
+function parseMediaURLs(text) {
+    const extsByCategory = {
+        images: ["jpg", "jpeg", "png", "gif", "webp", "bmp"],
+        videos: ["mp4", "webm", "mov", "m4v"],
+        audio: ["mp3", "wav", "ogg", "oga", "m4a", "aac", "flac", "opus"],
+    }
+    const singular = {images: "image", videos: "video", audio: "audio"}
+    const result = { images: [], videos: [], audio: [], formattedText: "" }
+
+    const toURL = (str) => {
+        try {
+            const url = new URL(str)
+            return /^https?:$/.test(url.protocol) ? url : null
+        } catch {
+            return null
+        }
+    }
+
+    let formattedText = text.replace(/https?:\/\/[^\s<>"']+/gi, (match) => {
+        const urlText = match.replace(/[.,!?;:)\]}]+$/, "")
+        const url = toURL(urlText)
+        if (!url) return match
+        const ext = url.pathname.match(/\.([a-z0-9]+)$/i)?.[1].toLowerCase()
+        const cat = Object.keys(extsByCategory).find((k) => extsByCategory[k].includes(ext))
+        if (!cat) return match
+        result[cat].push(url.href)
+        return "[" + singular[cat] + "]" + match.slice(urlText.length)
+    })
+
+    formattedText = formattedText.replace(/\[(image|video|audio)\](\s+\[\1\])+/g, (full, tag) => {
+        const count = full.match(/\[/g).length
+        const plural = Object.keys(singular).find((key) => singular[key] === tag)
+        return `[${count} ${plural}]`
+    })
+    result.formattedText = formattedText.replace(/^\[(images?|videos?|audio)\]$/g, "");
+
+    return result
 }
 
 const steps = [
@@ -292,6 +346,7 @@ function shuffle(array) {
 bindClick("#go", e => {
     localStorage.setItem("active", true)
     state = {}
+    responsesMediaCache = {}
     state.keyword = document.querySelector("#keyword").value
     if (state.keyword == null || state.keyword == "") state.keyword = "KEYWORD"
     state.note = document.querySelector("#prenote").value
@@ -458,6 +513,57 @@ bindClick("#sort", e => {
 })
 
 //// Step 3: A/B comparison
+let responsesMediaCache = {}
+
+function ensureMediaLoaded() {
+    // assume if key counts differ then responsesMediaCache is empty and needs to be remade
+    if (Object.keys(responsesMediaCache).length === Object.keys(state.responses).length) return;
+
+    responsesMediaCache = {}
+    for (let responseCode in state.responses) {
+        const mediaURLs = parseMediaURLs(state.responses[responseCode])
+
+        const urlItems = [];
+        for (let url of mediaURLs.images) {
+            urlItems.push({url: url, tag: "img"});
+        }
+        for (let url of mediaURLs.videos) {
+            urlItems.push({url: url, tag: "video"});
+        }
+        for (let url of mediaURLs.audio) {
+            urlItems.push({url: url, tag: "audio"});
+        }
+
+        let elems = []
+        for (let item of urlItems) {
+            const elem = realize({tag: item.tag})
+            elems.push(elem)
+            elem.src = item.url
+            if (item.tag == "img") {
+                elem.addEventListener("load", () => {
+                    elem.style.setProperty("--aspect-ratio", elem.naturalWidth / elem.naturalHeight)
+                }, { once: true })
+                elem.addEventListener("click", e => {
+                    e.stopPropagation();
+                    const img = imageZoomDialog.querySelector("img")
+                    img.src = item.url
+                    imageZoomDialog.showModal()
+                });
+            } else if (item.tag == "video") {
+                elem.controls = true
+                elem.playsInline = true
+                elem.addEventListener("loadedmetadata", () => {
+                    elem.style.setProperty("--aspect-ratio", elem.videoWidth / elem.videoHeight)
+                }, { once: true })
+            } else if (item.tag == "audio") {
+                elem.controls = true
+            }
+        }
+
+        responsesMediaCache[responseCode] = {elems: elems, formattedText: mediaURLs.formattedText}
+    }
+}
+
 function countWords(str) {
     str = str.replace(/[!,:;?]+/g, " ")
     str = str.replace(/[^\d\w\s]+/g, "")
@@ -475,10 +581,13 @@ bindStep("step3", () => {
         activateStep("step4")
     } else {
         // result.compare is an array of two responseCodes which we can't sort
+        ensureMediaLoaded();
         const a = emptySelector("#a")
         const b = emptySelector("#b")
-        a.textContent = state.responses[result.compare[0]]
-        b.textContent = state.responses[result.compare[1]]
+        const aSpan = realize({tag: "span", text: responsesMediaCache[result.compare[0]].formattedText});
+        const bSpan = realize({tag: "span", text: responsesMediaCache[result.compare[1]].formattedText});
+        a.appendChild(aSpan);
+        b.appendChild(bSpan);
         if (loadSetting("smartColors") == true) {
             a.style.borderColor = hexColor(makeColor(guessScore(result.compare[0])))
             b.style.borderColor = hexColor(makeColor(guessScore(result.compare[1])))
@@ -488,16 +597,22 @@ bindStep("step3", () => {
             }
         }
         if (loadSetting("wordcount") == true) {
-            a.appendChild(realize(" "))
-            b.appendChild(realize(" "))
-            a.appendChild(realize({
-                tag: "small",
-                text: "(" + countWords(state.responses[result.compare[0]]) + ")"
-            }))
-            b.appendChild(realize({
-                tag: "small",
-                text: "(" + countWords(state.responses[result.compare[1]]) + ")"
-            }))
+            for (let i = 0; i <= 1; i++) {
+                const span = i == 0 ? aSpan : bSpan
+                if (!span.textContent) continue
+                span.appendChild(realize(" "))
+                span.appendChild(realize({
+                    tag: "small",
+                    text: "(" + countWords(state.responses[result.compare[i]]) + ")"
+                }))
+            }
+        }
+        if (loadSetting("renderMedia") == true) {
+            for (let i = 0; i <= 1; i++) {
+                const elem = i == 0 ? a : b
+                const media = responsesMediaCache[result.compare[i]];
+                media.elems.forEach(e => elem.appendChild(e))
+            }
         }
         compareProgress()
     }
@@ -949,6 +1064,7 @@ function autoSave() {
 function loadState(name) {
     state = JSON.parse(localStorage.getItem("state:" + name))
     sortCache = {}
+    responsesMediaCache = {}
 }
 
 function deleteState(name) {

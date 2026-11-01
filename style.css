@@ -255,6 +255,51 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
 .respButton {
     flex-grow: 1;
     max-height: 8em;
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    align-items: center;
+    gap: 4px;
+    overflow: scroll;
+}
+
+.respButton:has(img,video) {
+    flex-grow: unset;
+    max-height: 67vh;
+    min-height: 8em;
+    padding: 8px 0 16px 0;
+}
+
+.respButton:hover:has(img:hover, video:hover, audio:hover) {
+    background: var(--inputbg);
+}
+
+.respButton :is(img, video) {
+    width: min(65%, calc(16em * var(--aspect-ratio, 1)));
+    height: auto;
+}
+
+#imageZoomDialog {
+    padding: 0;
+    border: none;
+    background: transparent;
+    max-width: none;
+    max-height: none;
+    cursor: zoom-out;
+}
+
+#imageZoomDialog::backdrop {
+    background: #0007;
+}
+
+#imageZoomDialog img {
+    width: 95vw;
+    height: 95vh;
+    object-fit: contain;
+}
+
+.respButton img {
+    cursor: zoom-in;
 }
 
 .step3 #note {
@@ -299,6 +344,9 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
     }
     .respButton {
         max-height: unset;
+    }
+    .respButton:has(img,video) {
+        flex-grow: 1;
     }
     nav .right {
         height: 4em;

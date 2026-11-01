@@ -96,6 +96,10 @@
                     <label for="smartColors">Smart colors (based on previous voting, better responses are more green)</label>
                 </div>
                 <div class="selectFlex">
+                    <input type="checkbox" id="renderMedia" name="renderMedia" checked />
+                    <label for="renderMedia">Display images, videos & audio if responses contain links to them</label>
+                </div>
+                <div class="selectFlex">
                     <input type="checkbox" id="handleDrag" name="handleDrag" />
                     <label for="handleDrag">Only drag with handles (good on mobile)</label>
                 </div>
@@ -145,7 +149,7 @@
                 <!-- Step 3: A/B comparison -->
                 <button class="flex respButton" id="a">Response A</button>
                 <button class="flex respButton" id="b">Response B</button>
-                <textarea id="note" placeholder="Notes (eg put a prompt here and it will save)"></textarea>
+                <textarea id="note" placeholder="Notes (e.g. put a prompt here and it will save)"></textarea>
 
             </div>
             <div class="step step4 invisible">
@@ -184,6 +188,9 @@
                 <button id="saveBtn">Save</button>
             </div>
         </div>
+        <dialog id="imageZoomDialog">
+            <img>
+        </dialog>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>
         <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
         <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
