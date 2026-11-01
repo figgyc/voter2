@@ -71,7 +71,9 @@ function loadSetting(name) {
 }
 
 const imageZoomDialog = document.querySelector("dialog#imageZoomDialog")
+let imageZoomDialogKeydown;
 imageZoomDialog.addEventListener("click", () => imageZoomDialog.close())
+imageZoomDialog.addEventListener("keydown", e => imageZoomDialogKeydown && imageZoomDialogKeydown(e))
 
 const tiersetSelect = document.querySelector("#tierset")
 function showCustom() {
@@ -250,6 +252,7 @@ let navStack = []
 let currentStep = steps[0]
 let stepHandlers = {}
 function activateStep(newStep, noPush) {
+    imageZoomDialog.close()
     for (let step of steps) {
         for (let element of document.querySelectorAll("."+step)) {
             if (step == newStep) {
@@ -535,12 +538,15 @@ function ensureMediaLoaded() {
         }
 
         let elems = []
-        for (let item of urlItems) {
+        for (let i = 0; i < urlItems.length; i++) {
+            const item = urlItems[i];
             const elem = realize({tag: item.tag})
             elems.push(elem)
             elem.src = item.url
             if (item.tag == "img") {
+                elem.classList.add("loading")
                 elem.addEventListener("load", () => {
+                    elem.classList.remove("loading")
                     elem.style.setProperty("--aspect-ratio", elem.naturalWidth / elem.naturalHeight)
                 }, { once: true })
                 elem.addEventListener("click", e => {
@@ -548,6 +554,23 @@ function ensureMediaLoaded() {
                     const img = imageZoomDialog.querySelector("img")
                     img.src = item.url
                     imageZoomDialog.showModal()
+                    let shownI = i
+                    imageZoomDialogKeydown = e => {
+                        let d
+                        if (e.key === "ArrowRight") d = 1
+                        else if (e.key === "ArrowLeft") d = -1
+                        else return
+
+                        for (let j = 0; j < urlItems.length - 1; j++) {
+                            shownI += d
+                            if (shownI < 0) shownI = urlItems.length - 1
+                            else if (shownI >= urlItems.length) shownI = 0
+                            if (urlItems[shownI].tag === "img") {
+                                img.src = urlItems[shownI].url
+                                break
+                            }
+                        }
+                    }
                 });
             } else if (item.tag == "video") {
                 elem.controls = true
@@ -584,10 +607,18 @@ bindStep("step3", () => {
         ensureMediaLoaded();
         const a = emptySelector("#a")
         const b = emptySelector("#b")
-        const aSpan = realize({tag: "span", text: responsesMediaCache[result.compare[0]].formattedText});
-        const bSpan = realize({tag: "span", text: responsesMediaCache[result.compare[1]].formattedText});
+        const aSpan = realize({tag: "span", text: state.responses[result.compare[0]]});
+        const bSpan = realize({tag: "span", text: state.responses[result.compare[1]]});
         a.appendChild(aSpan);
         b.appendChild(bSpan);
+        if (loadSetting("renderMedia") == true) {
+            for (let i = 0; i <= 1; i++) {
+                const elem = i == 0 ? a : b
+                elem.textContent = responsesMediaCache[result.compare[i]].formattedText
+                const media = responsesMediaCache[result.compare[i]];
+                media.elems.forEach(e => elem.appendChild(e))
+            }
+        }
         if (loadSetting("smartColors") == true) {
             a.style.borderColor = hexColor(makeColor(guessScore(result.compare[0])))
             b.style.borderColor = hexColor(makeColor(guessScore(result.compare[1])))
@@ -605,13 +636,6 @@ bindStep("step3", () => {
                     tag: "small",
                     text: "(" + countWords(state.responses[result.compare[i]]) + ")"
                 }))
-            }
-        }
-        if (loadSetting("renderMedia") == true) {
-            for (let i = 0; i <= 1; i++) {
-                const elem = i == 0 ? a : b
-                const media = responsesMediaCache[result.compare[i]];
-                media.elems.forEach(e => elem.appendChild(e))
             }
         }
         compareProgress()

@@ -278,6 +278,13 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
     width: min(65%, calc(16em * var(--aspect-ratio, 1)));
     height: auto;
 }
+.respButton img.loading {
+    background: #7775;
+    height: 16em;
+    width: 24em;
+    flex-shrink: 0;
+    object-position: -99999px 99999px;
+}
 
 #imageZoomDialog {
     padding: 0;
