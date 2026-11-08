@@ -211,6 +211,22 @@ progress::-webkit-progress-value, progress::-moz-progress-bar {
     flex-direction: row;
 }
 
+.response .text {
+    width: 100%;
+}
+
+.response :is(img, video) {
+    width: min(65%, calc(16em * var(--aspect-ratio, 1)));
+    height: auto;
+}
+.response img.loading {
+    background: #7775;
+    height: 16em;
+    width: 24em;
+    flex-shrink: 0;
+    object-position: -99999px 99999px;
+}
+
 .response .draggy {
     background-color: var(--inputbg);
     background-image: var(--draggy);

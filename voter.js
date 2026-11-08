@@ -321,8 +321,6 @@ function bindClick(selector, closure) {
 
 function emptySelector(selector) {
     let element = document.querySelector(selector)
-    //for (let child of element.children)
-    //    child.remove()
     element.innerHTML = ""
     return element
 }
@@ -509,13 +507,21 @@ bindStep("step2", () => {
         }))
     }
 
+    ensureMediaLoaded();
+
     for (let responseCode of state.responseKeys) {
+        let text = realize({tag: "div", classes: ["text"], text: state.responses[responseCode]})
+        if (loadSetting("renderMedia") == true) {
+            text.textContent = responsesMediaCache[responseCode].formattedText
+            const media = responsesMediaCache[responseCode]
+            media.elems.forEach(e => text.appendChild(e))
+        }
         let thing = realize({
             tag: "div",
             classes: [ "response" ],
             children: [
                 realize({tag: "div", classes: ["draggy"]}),
-                realize({tag: "div", classes: ["text"], text: state.responses[responseCode]}),
+                text,
             ]
         })
         thing.dataset.response = responseCode
@@ -598,15 +604,15 @@ function ensureMediaLoaded() {
     for (let responseCode in state.responses) {
         const mediaURLs = parseMediaURLs(state.responses[responseCode])
 
-        const urlItems = [];
+        const urlItems = []
         for (let url of mediaURLs.images) {
-            urlItems.push({url, tag: "img"});
+            urlItems.push({url, tag: "img"})
         }
         for (let url of mediaURLs.videos) {
-            urlItems.push({url, tag: "video"});
+            urlItems.push({url, tag: "video"})
         }
         for (let url of mediaURLs.audio) {
-            urlItems.push({url, tag: "audio"});
+            urlItems.push({url, tag: "audio"})
         }
 
         let elems = []
@@ -664,7 +670,6 @@ function ensureMediaLoaded() {
 function countWords(str) {
     str = str.replace(/[!,:;?]+/g, " ")
     str = str.replace(/[^\d\w\s]+/g, "")
-    //.replace(/[]/, " ")
     str = str.split(' ')
     str = str.filter(function (n) { return n != '' })
     return str.length
@@ -686,12 +691,12 @@ bindStep("step3", () => {
 
         for (const resp of resps) {
             const {button, responseCode} = resp
-            const span = realize({tag: "span", text: state.responses[responseCode]});
-            button.appendChild(span);
+            const span = realize({tag: "span", text: state.responses[responseCode]})
+            button.appendChild(span)
 
             if (loadSetting("renderMedia") == true) {
                 span.textContent = responsesMediaCache[responseCode].formattedText
-                const media = responsesMediaCache[responseCode];
+                const media = responsesMediaCache[responseCode]
                 media.elems.forEach(e => button.appendChild(e))
             }
 
@@ -744,7 +749,6 @@ function trySort(comparator, noCache) {
 
     let sublists = tierSublists()
 
-    // tierCodes.append(-1) New algo disallows unsorteds
     // Sort sublists
     const sortFunction = sortFunctions[loadSetting("sortalgo")]
     let sortedSublists = {}
@@ -781,8 +785,6 @@ function simulate(n, func) {
     return result
 }
 
-// function s(n,f){let r=0;let i=0; while(i<n){r+=f();i++};return r/n}
-
 let debugGuesses = 0
 let debugComparisons = 0
 let debugHandComparisons = 0
@@ -799,8 +801,6 @@ function compareProgress() {
         let sublists = tierSublists()
         const sortFunction = sortFunctions[loadSetting("sortalgo")]
         const comparator = voterComparator("predict")
-
-        // tierCodes.append(-1) New algo disallows unsorteds
 
         // determine max guesses
         if (state.tierMaxGuesses == undefined) {
@@ -877,8 +877,6 @@ function compareProgress() {
                 }
             }
         }
-
-        // document.querySelector("progress").value = Math.max(0, state.maxGuesses - currentGuesses) / state.maxGuesses
     }, 200)
 }
 
@@ -1033,15 +1031,22 @@ document.addEventListener("keydown", e => {
 
 //// Step 4: Review
 bindStep("step4", () => {
+    ensureMediaLoaded();
     const responseList = emptySelector("#responseList")
     if (state.sortResult == undefined) state.sortResult = trySort(voterComparator()).result
     for (let code of state.sortResult) {
+        let text = realize({tag: "div", classes: ["text"], text: state.responses[code]})
+        if (loadSetting("renderMedia") == true) {
+            text.textContent = responsesMediaCache[code].formattedText
+            const media = responsesMediaCache[code];
+            media.elems.forEach(e => text.appendChild(e))
+        }
         let thing = realize({
             tag: "div",
             classes: [ "response" ],
             children: [
                 realize({tag: "div", classes: ["draggy"]}),
-                realize({tag: "div", classes: ["text"], text: state.responses[code]}),
+                text,
             ]
         })
         thing.dataset.response = code
@@ -1411,5 +1416,4 @@ if (localStorage.getItem("savestates") != null) {
         alert("Your data migrated successfully.")
     }
     state = {}
-    //currentStep = "step1"
 }
