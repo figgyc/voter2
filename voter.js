@@ -317,6 +317,7 @@ function letterSplit(responses) {
     let output = {}
     let i = 0
     for (let response of responses) {
+        if (response.length == 0) continue
         if (document.querySelector("#letter").checked) {
             // TWOW mode
             let sep = " "
@@ -374,6 +375,43 @@ bindClick("#go", e => {
     } else {
         activateStep("step2")
     }
+})
+
+// Enable quick pasting screen keyword from responses textarea into the keyword input
+document.querySelector("#responses").addEventListener("paste", e => {
+    if (e.target.value.trim() != "") {
+        const entireThingSelected = e.target.selectionStart === 0 && e.target.selectionEnd === e.target.value.length
+        if (!entireThingSelected) return
+    }
+
+    let lines = e.clipboardData.getData("text").split("\n")
+
+    const nonWhitespaceLines = lines.filter(s => s.trim() != "")
+    if (!nonWhitespaceLines) return
+    const firstLineLooksLikeKeyword = /^\s*\S+\s*$/.test(nonWhitespaceLines[0])
+    const secondLineLooksLikeResponse = /^\s*\S+\s*\S.*$/.test(nonWhitespaceLines[1])
+    if (firstLineLooksLikeKeyword && secondLineLooksLikeResponse) {
+        const keyword = nonWhitespaceLines[0].trim()
+        const currentKeyword = document.querySelector("#keyword").value.trim()
+        if (currentKeyword != keyword) {
+            document.querySelector("#keyword").value = keyword
+            lines = lines.slice(lines.indexOf(nonWhitespaceLines[1]))
+        }
+    }
+
+    const newValue = lines.map(line => line.replace(/\t+/g, "\t").trim())
+        .join("\n")
+        .replace(/\n+/g, "\n")
+        .replace(/^\s+/g, "")
+
+    if (e.target.value == newValue) return
+
+    // Replace on next animation frame to allow user to undo and restore original paste
+    requestAnimationFrame(() => {
+        e.target.focus()
+        e.target.setSelectionRange(0, e.target.value.length)
+        document.execCommand("insertText", false, newValue)
+    })
 })
 
 bindStep("step1", () => {
@@ -897,25 +935,24 @@ document.querySelector("#note").addEventListener("change", e => {
     state.note = e.target.value
 })
 
-bindClick("#undo", e => {
-    state.comparisons.pop()
-    sortCache = {}
-    redraw()
-})
-
 function voteA() {
     state.comparisons.push(findResponseA + ">" + findResponseB)
     autoSave()
     redraw()
 }
-
 function voteB() {
     state.comparisons.push(findResponseB + ">" + findResponseA)
     autoSave()
     redraw()
 }
+function undo() {
+    state.comparisons.pop()
+    sortCache = {}
+    redraw()
+}
 bindClick("#a", voteA)
 bindClick("#b", voteB)
+bindClick("#undo", undo)
 
 let lastKeyTime = 0 // debounce number
 document.addEventListener("keydown", e => {
@@ -931,6 +968,10 @@ document.addEventListener("keydown", e => {
                 case "Digit2":
                     e.preventDefault()
                     voteB()
+                    return
+                case "KeyZ":
+                    e.preventDefault()
+                    undo()
                     return
                 default:
                     return // do nothing
