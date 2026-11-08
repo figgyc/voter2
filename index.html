@@ -96,6 +96,10 @@
                     <label for="smartColors">Smart colors (based on previous voting, better responses are more green)</label>
                 </div>
                 <div class="selectFlex">
+                    <input type="checkbox" id="renderMedia" name="renderMedia" />
+                    <label for="renderMedia">Display images, videos & audio if responses contain links to them</label>
+                </div>
+                <div class="selectFlex">
                     <input type="checkbox" id="handleDrag" name="handleDrag" />
                     <label for="handleDrag">Only drag with handles (good on mobile)</label>
                 </div>
@@ -105,7 +109,7 @@
                 <ul>
                     <li id="currentRevision">Current revision: Loading</li>
                     <li>
-                        Now with Votelink! More on the help page.
+                        New features (Thanks Adamanti!): Image, video, and audio responses; an Undo keyboard shortcut; and you can automatically paste spreadsheets with the keyword and it will be filled in for you. See Help as always.
                     </li>
                 </ul>
                 <h4>About</h4>
@@ -184,6 +188,9 @@
                 <button id="saveBtn">Save</button>
             </div>
         </div>
+        <dialog id="imageZoomDialog">
+            <img>
+        </dialog>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" async></script>
         <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
         <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>

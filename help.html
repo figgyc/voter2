@@ -41,7 +41,7 @@
         In summary:
         <ol>
           <li>From the Google Sheet, copy the megascreen columns. Include the letter <strong>and</strong> the responses. (If you don't have a sheet you can also enter these manually into the box.)</li>
-          <li>Type the voting keyword into the keyword box.</li>
+          <li>Type the voting keyword into the keyword box. Or if the sheet has the keyword on its own above the responses, you can copy that row as well, and it will automatically be filled in.</li>
           <li>Type or copy/paste any letters which represent your response into the "Your responses" box. If you have two or more responses, separate each letter with a comma.</li>
           <li>If you want to do tier listing, select a set of tiers to use in the "Tier listing mode" setting.</li>
           <li>Click Go!</li>
@@ -61,10 +61,11 @@
             <li><strong>Only drag with handles</strong>: On the tier list screen and review screen, Voter features drag and drop lists to let you rearrange responses. On a computer it's nice to drag the text of the responses so you don't have to move your mouse to the small drag handles. But on a phone this will prevent you from scrolling the screen by touching and swiping, so this option makes it so you can only move drag and drop lists by using the handles.</li>
             <li><strong>Import/export</strong>: This page is fairly self explanatory - it lets you import and export your in-progress voting between different devices.</li>
             <li><strong>Keyboard shortcuts</strong>: If you're voting on a computer you can use the keyboard to be quicker. In the voting screen, press 1 to vote for the top response, 2 for the bottom, and Z to undo. In the tier list screen you can also use the number keys to select the tiers, where 1 is the top tier, 2 is the second tier and so on. (0 will add to the 10th tier).</li>
+            <li><strong>Display images, videos & audio</strong>: If this is enabled, links to images, video and audio will be replaced with a media display. You can click images to zoom in. Tips if you are creating a voting screen: make sure the link contains a file extension (eg .jpg, .mp3, .mp4). Avoid hosts that might be unreliable or not work in specific countries eg Imgur. Upload the images yourself, do not blindly trust external links from other people as depending on where they were uploaded, the image could be removed or edited after the fact. Test your voting screens before releasing them.</li>
             <li><strong>Votelink</strong>:
                 If you host a TWOW, you can create a link that automatically sends your voters to a particular screen. The format is as follows: <br />
-                <pre><code>https://voter.figgyc.uk/#votelink3=keyword%0Aprompt%0Avotescreen</code></pre> <br />
-                where votescreen is the (URL encoded) content of the Responses box, and same for the keyword box and prompt/notes box. To generate the votescreen string, use one line for each response, where the voting letter/symbol and response are separated by a tab or space. If you use Google Sheets, see <a href="https://docs.google.com/spreadsheets/d/1dfbluK2b23qivuPQ3LTxHAeYBH2cqOiCgJJtSxbHb0g">this Sheet</a> for an example formula. You might find it useful to make a copy of the sheet in the File menu at the top.
+                <pre><code>https://voter.figgyc.uk/#votelink4=options%09keyword%09prompt%09votescreen</code></pre> <br />
+                where votescreen is the (URL encoded) content of the Responses box, and same for the keyword box and prompt/notes box. Currently one option is supported - write "renderMedia" to enable "Display images, videos & audio", otherwise write "none". To generate the votescreen string, use one line for each response, where the voting letter/symbol and response are separated by a tab or space. If you use Google Sheets, see <a href="https://docs.google.com/spreadsheets/d/1dfbluK2b23qivuPQ3LTxHAeYBH2cqOiCgJJtSxbHb0g">this Sheet</a> for an example formula. You might find it useful to make a copy of the sheet in the File menu at the top.
             </li>
 
         </ul>

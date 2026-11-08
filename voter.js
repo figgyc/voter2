@@ -2,6 +2,22 @@
 "use strict"
 //// Settings and data storage
 
+// All data that should be saved should go in the state object
+let state = {
+    /*
+     * keyword: string
+     * yourResponses: string[]
+     * responses: { code: response } string:string
+     * tierSet: array
+     * tier: { code: tier }
+     * comparisons: pair[]
+     * settingOverrides: { setting: value }
+     * (automatic) lastModified: Date
+     * (automatic) currentStep: string
+     * (semi auto) name: string (a label)
+     */
+}
+
 // These are at the top so they work on the help page
 
 const defaultSettings = {
@@ -12,6 +28,7 @@ const defaultSettings = {
     wordcount: true,
     smartColors: true,
     handleDrag: false,
+    renderMedia: true,
     customTierset: ""
 }
 
@@ -65,9 +82,31 @@ function saveSetting(name, value) {
     return setSettings(settings)
 }
 function loadSetting(name) {
+    if (state?.settingOverrides && state.settingOverrides[name] !== undefined) {
+        return state.settingOverrides[name]
+    }
     let settings = getSettings()
     return settings[name]
 }
+
+let tempSettingOverrides = {}
+function overrideSetting(name, value) {
+    let settingInput = document.querySelector("#"+name)
+    settingInput.disabled = true
+    let settingLabel = document.querySelector("label[for="+name+"]")
+    settingLabel.classList.add("highlight")
+    if (settingInput.type == "checkbox") {
+        settingInput.checked = value
+    } else {
+        settingInput.value = value
+    }
+    tempSettingOverrides[name] = value
+}
+
+const imageZoomDialog = document.querySelector("dialog#imageZoomDialog")
+let imageZoomDialogKeydown;
+imageZoomDialog.addEventListener("click", () => imageZoomDialog.close())
+imageZoomDialog.addEventListener("keydown", e => imageZoomDialogKeydown && imageZoomDialogKeydown(e))
 
 const tiersetSelect = document.querySelector("#tierset")
 function showCustom() {
@@ -84,6 +123,10 @@ document.querySelector("#tierset").addEventListener("change", showCustom)
 for (let setting of Object.keys(defaultSettings)) {
     let settingInput = document.querySelector("#"+setting)
     let value = loadSetting(setting)
+    if (value === undefined) {
+        value = defaultSettings[setting]
+        saveSetting(setting, value)
+    }
     if (settingInput.type == "checkbox") {
         settingInput.checked = value
     } else {
@@ -182,6 +225,52 @@ function rgba(rgb, alpha) {
     return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
 }
 
+/**
+ * Detect all media URLs in a response and a formatted version replacing the URLs with [tags]
+ * media URLs.
+ *
+ * @param {String} text Response text
+ * @return {Object} Object with arrays 'images', 'videos', 'audio' and string 'formattedText'
+ */
+function parseMediaURLs(text) {
+    const extsByCategory = {
+        images: ["jpg", "jpeg", "png", "gif", "webp", "bmp"],
+        videos: ["mp4", "webm", "mov", "m4v"],
+        audio: ["mp3", "wav", "ogg", "oga", "m4a", "aac", "flac", "opus"],
+    }
+    const singular = {images: "image", videos: "video", audio: "audio"}
+    const result = { images: [], videos: [], audio: [], formattedText: "" }
+
+    const toURL = (str) => {
+        try {
+            const url = new URL(str)
+            return /^https?:$/.test(url.protocol) ? url : null
+        } catch {
+            return null
+        }
+    }
+
+    let formattedText = text.replace(/https?:\/\/[^\s<>"']+/gi, (match) => {
+        const urlText = match.replace(/[.,!?;:)\]}]+$/, "")
+        const url = toURL(urlText)
+        if (!url) return match
+        const ext = url.pathname.match(/\.([a-z0-9]+)$/i)?.[1].toLowerCase()
+        const cat = Object.keys(extsByCategory).find((k) => extsByCategory[k].includes(ext))
+        if (!cat) return match
+        result[cat].push(url.href)
+        return "[" + singular[cat] + "]" + match.slice(urlText.length)
+    })
+
+    formattedText = formattedText.replace(/\[(image|video|audio)\](\s+\[\1\])+/g, (full, tag) => {
+        const count = full.match(/\[/g).length
+        const plural = Object.keys(singular).find((key) => singular[key] === tag)
+        return `[${count} ${plural}]`
+    })
+    result.formattedText = formattedText.replace(/^\[(images?|videos?|audio)\]$/g, "");
+
+    return result
+}
+
 const steps = [
     "step1", // Response collection
     "stepL", // Savestate management
@@ -196,6 +285,7 @@ let navStack = []
 let currentStep = steps[0]
 let stepHandlers = {}
 function activateStep(newStep, noPush) {
+    imageZoomDialog.close()
     for (let step of steps) {
         for (let element of document.querySelectorAll("."+step)) {
             if (step == newStep) {
@@ -231,8 +321,6 @@ function bindClick(selector, closure) {
 
 function emptySelector(selector) {
     let element = document.querySelector(selector)
-    //for (let child of element.children)
-    //    child.remove()
     element.innerHTML = ""
     return element
 }
@@ -293,6 +381,7 @@ function shuffle(array) {
 bindClick("#go", e => {
     localStorage.setItem("active", true)
     state = {}
+    responsesMediaCache = {}
     state.keyword = document.querySelector("#keyword").value
     if (state.keyword == null || state.keyword == "") state.keyword = "KEYWORD"
     state.note = document.querySelector("#prenote").value
@@ -302,6 +391,7 @@ bindClick("#go", e => {
     state.responseKeys = shuffle(Object.keys(state.responses))
     state.sortalgo = document.querySelector("#sortalgo").value
     state.letter = loadSetting("letter")
+    state.settingOverrides = tempSettingOverrides
     let tierSetName = document.querySelector("#tierset").value
     if (tierSetName != "custom") {
         state.tierset = tierSets[tierSetName]
@@ -417,13 +507,21 @@ bindStep("step2", () => {
         }))
     }
 
+    ensureMediaLoaded();
+
     for (let responseCode of state.responseKeys) {
+        let text = realize({tag: "div", classes: ["text"], text: state.responses[responseCode]})
+        if (loadSetting("renderMedia") == true) {
+            text.textContent = responsesMediaCache[responseCode].formattedText
+            const media = responsesMediaCache[responseCode]
+            media.elems.forEach(e => text.appendChild(e))
+        }
         let thing = realize({
             tag: "div",
             classes: [ "response" ],
             children: [
                 realize({tag: "div", classes: ["draggy"]}),
-                realize({tag: "div", classes: ["text"], text: state.responses[responseCode]}),
+                text,
             ]
         })
         thing.dataset.response = responseCode
@@ -496,10 +594,82 @@ bindClick("#sort", e => {
 })
 
 //// Step 3: A/B comparison
+let responsesMediaCache = {}
+
+function ensureMediaLoaded() {
+    // assume if key counts differ then responsesMediaCache is empty and needs to be remade
+    if (Object.keys(responsesMediaCache).length === Object.keys(state.responses).length) return;
+
+    responsesMediaCache = {}
+    for (let responseCode in state.responses) {
+        const mediaURLs = parseMediaURLs(state.responses[responseCode])
+
+        const urlItems = []
+        for (let url of mediaURLs.images) {
+            urlItems.push({url, tag: "img"})
+        }
+        for (let url of mediaURLs.videos) {
+            urlItems.push({url, tag: "video"})
+        }
+        for (let url of mediaURLs.audio) {
+            urlItems.push({url, tag: "audio"})
+        }
+
+        let elems = []
+        for (let i = 0; i < urlItems.length; i++) {
+            const item = urlItems[i];
+            const elem = realize({tag: item.tag})
+            elem.src = item.url
+            elems.push(elem)
+            if (item.tag == "img") {
+                elem.classList.add("loading")
+                elem.addEventListener("load", () => {
+                    elem.classList.remove("loading")
+                    elem.style.setProperty("--aspect-ratio", elem.naturalWidth / elem.naturalHeight)
+                }, { once: true })
+                elem.addEventListener("click", e => {
+                    e.stopPropagation();
+                    const img = imageZoomDialog.querySelector("img")
+                    img.src = item.url
+                    imageZoomDialog.showModal()
+                    let shownI = i
+                    imageZoomDialogKeydown = e => {
+                        let d
+                        if (e.key === "ArrowRight") d = 1
+                        else if (e.key === "ArrowLeft") d = -1
+                        else return
+
+                        e.preventDefault()
+
+                        for (let j = 0; j < urlItems.length - 1; j++) {
+                            shownI += d
+                            if (shownI < 0) shownI = urlItems.length - 1
+                            else if (shownI >= urlItems.length) shownI = 0
+                            if (urlItems[shownI].tag === "img") {
+                                img.src = urlItems[shownI].url
+                                break
+                            }
+                        }
+                    }
+                });
+            } else if (item.tag == "video") {
+                elem.controls = true
+                elem.playsInline = true
+                elem.addEventListener("loadedmetadata", () => {
+                    elem.style.setProperty("--aspect-ratio", elem.videoWidth / elem.videoHeight)
+                }, { once: true })
+            } else if (item.tag == "audio") {
+                elem.controls = true
+            }
+        }
+
+        responsesMediaCache[responseCode] = {elems: elems, formattedText: mediaURLs.formattedText}
+    }
+}
+
 function countWords(str) {
     str = str.replace(/[!,:;?]+/g, " ")
     str = str.replace(/[^\d\w\s]+/g, "")
-    //.replace(/[]/, " ")
     str = str.split(' ')
     str = str.filter(function (n) { return n != '' })
     return str.length
@@ -513,30 +683,40 @@ bindStep("step3", () => {
         activateStep("step4")
     } else {
         // result.compare is an array of two responseCodes which we can't sort
-        const a = emptySelector("#a")
-        const b = emptySelector("#b")
-        a.textContent = state.responses[result.compare[0]]
-        b.textContent = state.responses[result.compare[1]]
-        if (loadSetting("smartColors") == true) {
-            a.style.borderColor = hexColor(makeColor(guessScore(result.compare[0])))
-            b.style.borderColor = hexColor(makeColor(guessScore(result.compare[1])))
-            if (loadSetting("theme") != "light") {
-                a.style.color = hexColor(makeColor(guessScore(result.compare[0])))
-                b.style.color = hexColor(makeColor(guessScore(result.compare[1])))
+        ensureMediaLoaded()
+        const resps = [
+            { button: emptySelector("#a"), responseCode: result.compare[0] },
+            { button: emptySelector("#b"), responseCode: result.compare[1] }
+        ]
+
+        for (const resp of resps) {
+            const {button, responseCode} = resp
+            const span = realize({tag: "span", text: state.responses[responseCode]})
+            button.appendChild(span)
+
+            if (loadSetting("renderMedia") == true) {
+                span.textContent = responsesMediaCache[responseCode].formattedText
+                const media = responsesMediaCache[responseCode]
+                media.elems.forEach(e => button.appendChild(e))
+            }
+
+            if (loadSetting("smartColors") == true) {
+                button.style.borderColor = hexColor(makeColor(guessScore(responseCode)))
+                if (loadSetting("theme") != "light") {
+                    button.style.color = hexColor(makeColor(guessScore(responseCode)))
+                }
+            }
+
+            if (loadSetting("wordcount") == true) {
+                if (!span.textContent) continue
+                span.appendChild(realize(" "))
+                span.appendChild(realize({
+                    tag: "small",
+                    text: "(" + countWords(state.responses[responseCode]) + ")"
+                }))
             }
         }
-        if (loadSetting("wordcount") == true) {
-            a.appendChild(realize(" "))
-            b.appendChild(realize(" "))
-            a.appendChild(realize({
-                tag: "small",
-                text: "(" + countWords(state.responses[result.compare[0]]) + ")"
-            }))
-            b.appendChild(realize({
-                tag: "small",
-                text: "(" + countWords(state.responses[result.compare[1]]) + ")"
-            }))
-        }
+
         compareProgress()
     }
 })
@@ -569,7 +749,6 @@ function trySort(comparator, noCache) {
 
     let sublists = tierSublists()
 
-    // tierCodes.append(-1) New algo disallows unsorteds
     // Sort sublists
     const sortFunction = sortFunctions[loadSetting("sortalgo")]
     let sortedSublists = {}
@@ -606,8 +785,6 @@ function simulate(n, func) {
     return result
 }
 
-// function s(n,f){let r=0;let i=0; while(i<n){r+=f();i++};return r/n}
-
 let debugGuesses = 0
 let debugComparisons = 0
 let debugHandComparisons = 0
@@ -624,8 +801,6 @@ function compareProgress() {
         let sublists = tierSublists()
         const sortFunction = sortFunctions[loadSetting("sortalgo")]
         const comparator = voterComparator("predict")
-
-        // tierCodes.append(-1) New algo disallows unsorteds
 
         // determine max guesses
         if (state.tierMaxGuesses == undefined) {
@@ -702,8 +877,6 @@ function compareProgress() {
                 }
             }
         }
-
-        // document.querySelector("progress").value = Math.max(0, state.maxGuesses - currentGuesses) / state.maxGuesses
     }, 200)
 }
 
@@ -858,15 +1031,22 @@ document.addEventListener("keydown", e => {
 
 //// Step 4: Review
 bindStep("step4", () => {
+    ensureMediaLoaded();
     const responseList = emptySelector("#responseList")
     if (state.sortResult == undefined) state.sortResult = trySort(voterComparator()).result
     for (let code of state.sortResult) {
+        let text = realize({tag: "div", classes: ["text"], text: state.responses[code]})
+        if (loadSetting("renderMedia") == true) {
+            text.textContent = responsesMediaCache[code].formattedText
+            const media = responsesMediaCache[code];
+            media.elems.forEach(e => text.appendChild(e))
+        }
         let thing = realize({
             tag: "div",
             classes: [ "response" ],
             children: [
                 realize({tag: "div", classes: ["draggy"]}),
-                realize({tag: "div", classes: ["text"], text: state.responses[code]}),
+                text,
             ]
         })
         thing.dataset.response = code
@@ -925,21 +1105,6 @@ bindClick("#back", e => {
     activateStep(navStack.pop(), true)
 })
 
-// All data that should be saved should go in the state object
-let state = {
-/*
- * keyword: string
- * yourResponses: string[]
- * responses: { code: response } string:string
- * tierSet: array
- * tier: { code: tier }
- * comparisons: pair[]
- * (automatic) lastModified: Date
- * (automatic) currentStep: string
- * (semi auto) name: string (a label)
- */
-}
-
 // convert a Unicode string to a string in which
 // each 16-bit unit occupies only one byte
 // licensed under CC0 from:
@@ -990,6 +1155,7 @@ function autoSave() {
 function loadState(name) {
     state = JSON.parse(localStorage.getItem("state:" + name))
     sortCache = {}
+    responsesMediaCache = {}
 }
 
 function deleteState(name) {
@@ -1104,7 +1270,7 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-const revision = 7
+const revision = 8
 document.querySelector("#currentRevision").textContent = "Current revision: " + revision
 
 // https://stackoverflow.com/a/5582719
@@ -1173,6 +1339,36 @@ if (votelink3 !== null) {
     }
 }
 
+// Votelink 4 (options)
+let votelink4 = null
+if (document.location.hash.startsWith("#votelink4=")) {
+    votelink4 = decodeURIComponent(document.location.hash.substring(11))
+}
+if (votelink4 === null) {
+    const params = new URLSearchParams(document.location.search)
+    votelink4 = params.get("votelink4")
+}
+if (votelink4 !== null) {
+    var i = votelink4.indexOf('\t');
+    if (i != -1) {
+        let [options, vlkw, vlpn, vlresp] = splitWithTail(votelink4, "\t", 3);
+        debugger;
+        for (let option of options.split(",")) {
+            switch (option) {
+                case 'renderMedia':
+                    overrideSetting('renderMedia', true)
+                    break;
+                case 'none':
+                default:
+                    break;
+            }
+        }
+        document.querySelector("#keyword").value = vlkw
+        document.querySelector("#prenote").value = vlpn
+        document.querySelector("#responses").value = vlresp
+    }
+}
+
 //// Voter 1 > Voter 2 migration
 if (localStorage.getItem("savestates") != null) {
     alert("Welcome to Voter version 2! We will now try to migrate your data. It might look a bit different but it works basically the same. You might want to try the new theme, or check out the new help page.")
@@ -1220,5 +1416,4 @@ if (localStorage.getItem("savestates") != null) {
         alert("Your data migrated successfully.")
     }
     state = {}
-    //currentStep = "step1"
 }
