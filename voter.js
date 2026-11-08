@@ -1270,7 +1270,7 @@ bindClick("#saveBtn", e => {
     activateStep(navStack.pop(), true)
 })
 
-const revision = 7
+const revision = 8
 document.querySelector("#currentRevision").textContent = "Current revision: " + revision
 
 // https://stackoverflow.com/a/5582719
