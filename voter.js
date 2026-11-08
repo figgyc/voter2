@@ -758,25 +758,24 @@ document.querySelector("#note").addEventListener("change", e => {
     state.note = e.target.value
 })
 
-bindClick("#undo", e => {
-    state.comparisons.pop()
-    sortCache = {}
-    redraw()
-})
-
 function voteA() {
     state.comparisons.push(findResponseA + ">" + findResponseB)
     autoSave()
     redraw()
 }
-
 function voteB() {
     state.comparisons.push(findResponseB + ">" + findResponseA)
     autoSave()
     redraw()
 }
+function undo() {
+    state.comparisons.pop()
+    sortCache = {}
+    redraw()
+}
 bindClick("#a", voteA)
 bindClick("#b", voteB)
+bindClick("#undo", undo)
 
 let lastKeyTime = 0 // debounce number
 document.addEventListener("keydown", e => {
@@ -792,6 +791,10 @@ document.addEventListener("keydown", e => {
                 case "Digit2":
                     e.preventDefault()
                     voteB()
+                    return
+                case "KeyZ":
+                    e.preventDefault()
+                    undo()
                     return
                 default:
                     return // do nothing
